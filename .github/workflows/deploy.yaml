@@ -8,31 +8,61 @@ on:
 
 jobs:
   deploy:
+    name: Build and Deploy React App to S3
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ap-south-1
-      S3_BUCKET_NAME: lms-frontend-dev-fceacbe3   # from Terraform output
+      S3_BUCKET_NAME: lms-frontend-dev-fceacbe3   # 👈 replace with your actual bucket name
 
     steps:
-      - name: Checkout code
+      # 🪣 Step 1 — Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # ⚙️ Step 2 — Setup Node Environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      # 📦 Step 3 — Install Dependencies
+      # Use `npm ci` if lockfile exists; fallback to `npm install` if not
+      - name: Install Dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Lockfile found — using npm ci"
+            npm ci
+          else
+            echo "No lockfile found — running npm install and generating one"
+            npm install --package-lock-only
+            npm ci
+          fi
 
-      - name: Build frontend
+      # 🏗️ Step 4 — Build React App
+      - name: Build React App
         run: npm run build
 
-      - name: Deploy build to S3
-        run: aws s3 sync ./build s3://$S3_BUCKET_NAME --delete
+      # 🔍 Step 5 — Verify Build Folder Exists
+      - name: Check Build Folder
+        run: |
+          if [ ! -d "./build" ]; then
+            echo "❌ Build folder not found!"
+            exit 1
+          fi
+
+      # ☁️ Step 6 — Deploy to S3
+      - name: Deploy to S3
+        run: |
+          echo "Deploying to S3 bucket: $S3_BUCKET_NAME"
+          aws s3 sync ./build s3://$S3_BUCKET_NAME --delete --cache-control max-age=86400
+
+      # 🌍 Step 7 — Output S3 Website URL
+      - name: Print Website URL
+        run: |
+          echo "✅ Deployment complete!"
+          echo "Visit your site at:"
+          echo "http://$S3_BUCKET_NAME.s3-website.$AWS_REGION.amazonaws.com"
