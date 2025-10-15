@@ -23,11 +23,11 @@ jobs:
         uses: actions/checkout@v4
 
       # ⚙️ Step 2 — Setup Node Environment
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
+      #- name: Setup Node.js
+      #  uses: actions/setup-node@v4
+      #  with:
+      #    node-version: 22
+      #    cache: "npm"
 
       # 📦 Step 3 — Install Dependencies
       # Use `npm ci` if lockfile exists; fallback to `npm install` if not
