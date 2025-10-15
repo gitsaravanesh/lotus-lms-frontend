@@ -22,26 +22,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # ⚙️ Step 2 — Setup Node Environment
-      #- name: Setup Node.js
-      #  uses: actions/setup-node@v4
-      #  with:
-      #    node-version: 22
-      #    cache: "npm"
+       ⚙️ Step 2 — Setup Node Environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
 
       # 📦 Step 3 — Install Dependencies
       # Use `npm ci` if lockfile exists; fallback to `npm install` if not
       - name: Install Dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "Lockfile found — using npm ci"
-            npm ci
-          else
-            echo "No lockfile found — running npm install and generating one"
-            npm install --package-lock-only
-            npm ci
-          fi
-
+        run: npm ci
+          
       # 🏗️ Step 4 — Build React App
       - name: Build React App
         run: npm run build
