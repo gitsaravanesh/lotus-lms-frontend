@@ -1,15 +1,46 @@
 {
   "name": "lms-frontend",
   "version": "1.0.0",
+  "private": true,
+  "description": "LMS frontend web app built with React and AWS Cognito for authentication.",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint ./src"
   },
   "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "aws-amplify": "^5.3.0"
-  }
+    "aws-amplify": "^5.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "keywords": [
+    "react",
+    "aws",
+    "cognito",
+    "amplify",
+    "lms",
+    "frontend",
+    "terraform"
+  ],
+  "author": "Saravanesh",
+  "license": "MIT"
 }
