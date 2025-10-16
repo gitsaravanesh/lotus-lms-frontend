@@ -1,16 +1,16 @@
-const awsConfig = {
-  Auth: {
-    region: process.env.REACT_APP_REGION,
-    userPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-    userPoolWebClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
-    oauth: {
-      domain: process.env.REACT_APP_COGNITO_DOMAIN.replace('https://', ''),
-      scope: ["email", "openid", "profile"],
-      redirectSignIn: process.env.REACT_APP_REDIRECT_URL,
-      redirectSignOut: process.env.REACT_APP_REDIRECT_URL,
-      responseType: "code",
-    },
-  },
-};
+import { Amplify } from "aws-amplify";
 
-export default awsConfig;
+Amplify.configure({
+  Auth: {
+    region: "ap-south-1",
+    userPoolId: "ap-south-1_tlq8pMnBG",   // replace with your actual user pool ID
+    userPoolWebClientId: "1gd98lgt6jqtletgio0e2us33n",
+    oauth: {
+      domain: "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com",
+      scope: ["email", "openid", "profile"],
+      redirectSignIn: "https://dodyqytcfhwoe.cloudfront.net",
+      redirectSignOut: "https://dodyqytcfhwoe.cloudfront.net",
+      responseType: "code"
+    }
+  }
+});
