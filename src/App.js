@@ -21,28 +21,28 @@ const App = () => {
     }
   };
 
-  // ✅ Handle logout using Hosted UI redirect (correct method)
+  // ✅ Fixed logout with correct redirect_uri parameter
   const handleLogout = async () => {
     try {
       const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
       const clientId = "1gd98lgt6jqtletgio0e2us33n";
 
-      // 🔹 Detect environment automatically
+      // Auto-detect environment
       const isLocal = window.location.hostname === "localhost";
 
-      // Must have trailing slash `/`
-      const logoutRedirect = isLocal
+      // ⚠️ Must match Cognito Allowed sign-out URLs exactly (with /)
+      const redirectUri = isLocal
         ? "http://localhost:3000/"
         : "https://dodyqytcfhwoe.cloudfront.net/";
 
-      // ✅ Proper Hosted UI logout endpoint
-      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
-        logoutRedirect
+      // ✅ Correct parameter name: redirect_uri (not logout_uri)
+      const logoutUrl = `${domain}/logout?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+        redirectUri
       )}`;
 
       console.log("Logging out via:", logoutUrl);
 
-      // ✅ Redirect browser to logout endpoint
+      // ✅ Redirect to Cognito Hosted UI logout endpoint
       window.location.replace(logoutUrl);
     } catch (error) {
       console.error("Logout error:", error);
@@ -50,7 +50,18 @@ const App = () => {
   };
 
   if (loading) {
-    return <p style={{ textAlign: "center", marginTop: "100px" }}>Loading...</p>;
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "100px",
+          fontSize: "18px",
+          color: "#555",
+        }}
+      >
+        Checking authentication...
+      </div>
+    );
   }
 
   return (
@@ -58,7 +69,7 @@ const App = () => {
       style={{
         textAlign: "center",
         marginTop: "100px",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
       {!user ? (
@@ -69,36 +80,42 @@ const App = () => {
             background: "#fff",
             padding: "40px",
             borderRadius: "15px",
-            boxShadow: "0 0 20px rgba(0,0,0,0.1)",
+            boxShadow: "0 4px 25px rgba(0,0,0,0.1)",
             display: "inline-block",
-            minWidth: "300px",
+            minWidth: "320px",
           }}
         >
-          <h2 style={{ color: "#333", marginBottom: "10px" }}>
+          <h2
+            style={{
+              color: "#1b4332",
+              marginBottom: "10px",
+              fontWeight: "600",
+            }}
+          >
             ✅ Logged in successfully!
           </h2>
-          <p style={{ color: "#555" }}>
-            Welcome, {user.attributes?.email || "user"} 🎉
+          <p style={{ color: "#333" }}>
+            Welcome, <b>{user.attributes?.email || "user"}</b> 🎉
           </p>
 
           <button
             onClick={handleLogout}
             style={{
-              backgroundColor: "#e63946",
+              backgroundColor: "#d62828",
               color: "#fff",
-              padding: "10px 25px",
+              padding: "10px 30px",
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
               fontSize: "16px",
-              marginTop: "20px",
+              marginTop: "25px",
               transition: "0.3s ease",
             }}
             onMouseOver={(e) =>
-              (e.target.style.backgroundColor = "#c72c3a")
+              (e.target.style.backgroundColor = "#b71c1c")
             }
             onMouseOut={(e) =>
-              (e.target.style.backgroundColor = "#e63946")
+              (e.target.style.backgroundColor = "#d62828")
             }
           >
             Logout
