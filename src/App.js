@@ -22,35 +22,43 @@ const App = () => {
     }
   };
 
-  // ✅ Fixed logout function with `response_type` and correct redirect
+  // ✅ Full logout fix
   const handleLogout = async () => {
     try {
+      // 1️⃣ Clear Amplify’s local session
+      await Auth.signOut({ global: true });
+
+      // 2️⃣ Construct logout URL
       const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
       const clientId = "1gd98lgt6jqtletgio0e2us33n";
 
-      // Detect local or CloudFront environment
       const isLocal = window.location.hostname === "localhost";
 
-      // ⚠️ Must match Allowed sign-out URLs in Cognito (with trailing slash)
+      // ✅ Must match Cognito sign-out URLs
       const redirectUri = isLocal
         ? "http://localhost:3000/"
         : "https://dodyqytcfhwoe.cloudfront.net/";
 
-      // ✅ Include response_type=code — fixes 400 error
+      // ✅ Include response_type to avoid errors
       const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
         redirectUri
       )}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
-      console.log("Logging out via:", logoutUrl);
+      console.log("Redirecting to Cognito logout:", logoutUrl);
 
-      // Redirect to Cognito Hosted UI logout endpoint
-      window.location.href = logoutUrl;
+      // 3️⃣ Redirect to Cognito Hosted UI logout
+      window.location.assign(logoutUrl);
+
+      // 4️⃣ Optional hard reload to force re-render in case of caching
+      setTimeout(() => {
+        window.location.href = redirectUri;
+      }, 2500);
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  // ✅ Loader for smoother UX
+  // ✅ Loading indicator
   if (loading) {
     return (
       <div
@@ -66,6 +74,7 @@ const App = () => {
     );
   }
 
+  // ✅ Main UI
   return (
     <div
       style={{
@@ -75,10 +84,8 @@ const App = () => {
       }}
     >
       {!user ? (
-        // ✅ Show Login screen if user not authenticated
         <Login />
       ) : (
-        // ✅ Show Logged-in screen
         <div
           style={{
             background: "#fff",
