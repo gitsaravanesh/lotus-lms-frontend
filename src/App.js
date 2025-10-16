@@ -33,7 +33,7 @@ const App = () => {
       // ⚠️ Must match Cognito Allowed sign-out URLs exactly (with /)
       const redirectUri = isLocal
         ? "http://localhost:3000/"
-        : "https://dodyqytcfhwoe.cloudfront.net/";
+        : "https://dodyqytcfhwoe.cloudfront.net";
 
       // ✅ Correct parameter name: redirect_uri (not logout_uri)
       const logoutUrl = `${domain}/logout?client_id=${clientId}&redirect_uri=${encodeURIComponent(
