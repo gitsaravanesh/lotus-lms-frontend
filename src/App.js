@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,13 +12,11 @@ const App = () => {
   const redirectUri = "https://dodyqytcfhwoe.cloudfront.net/";
   const tokenEndpoint = `${domain}/oauth2/token`;
 
-  // Extract query parameters from URL
   const getQueryParam = (key) => {
     const params = new URLSearchParams(window.location.search);
     return params.get(key);
   };
 
-  // Exchange the authorization code for tokens
   const exchangeCodeForToken = async (code) => {
     try {
       const data = new URLSearchParams({
@@ -51,29 +50,34 @@ const App = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
-    // Clear local/session storage
+    // clear local session
     localStorage.removeItem("id_token");
     localStorage.removeItem("access_token");
     sessionStorage.clear();
     setIsAuthenticated(false);
     setIsLoggedOut(true);
 
-    // Force Cognito to clear its cookie session by adding a random state param
+    const isLocal = window.location.hostname === "localhost";
+    const redirectUri = isLocal
+      ? "http://localhost:3000/"
+      : "https://dodyqytcfhwoe.cloudfront.net/";
+
     const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
       redirectUri
     )}&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&response_type=code&state=${Date.now()}`;
 
-    // Redirect after short delay (for user experience)
-    setTimeout(() => {
-      window.location.href = logoutUrl;
-    }, 1000);
+    // Redirect via clear-session.html
+    const clearSessionUrl = `${redirectUri}clear-session.html?logout_url=${encodeURIComponent(
+      logoutUrl
+    )}`;
+
+    console.log("Redirecting via:", clearSessionUrl);
+    window.location.href = clearSessionUrl;
   };
 
-  // Check for code or existing token on load
   useEffect(() => {
     const code = getQueryParam("code");
     if (code) {
@@ -86,7 +90,6 @@ const App = () => {
           setUserEmail(payload.email || "User");
           setIsAuthenticated(true);
         } catch {
-          console.warn("Invalid token, clearing storage.");
           localStorage.clear();
         }
       }
@@ -102,30 +105,20 @@ const App = () => {
       }}
     >
       {!isAuthenticated ? (
-        isLoggedOut ? (
-          <div
-            style={{
-              background: "#f9f9f9",
-              display: "inline-block",
-              padding: "40px",
-              borderRadius: "12px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-              transition: "all 0.3s ease",
-            }}
-          >
-            <h2 style={{ color: "#1b4332" }}>👋 You’ve been logged out!</h2>
-            <p>Thank you for using the LMS Platform.</p>
+        window.location.pathname === "/signup" ? (
+          <Signup />
+        ) : isLoggedOut ? (
+          <div>
+            <h2>👋 You’ve been logged out!</h2>
             <button
-              onClick={() => setIsLoggedOut(false)}
+              onClick={() => (window.location.href = "/")}
               style={{
                 backgroundColor: "#0077b6",
                 color: "#fff",
-                border: "none",
                 padding: "10px 25px",
                 borderRadius: "8px",
+                border: "none",
                 cursor: "pointer",
-                fontSize: "15px",
-                marginTop: "10px",
               }}
             >
               Go to Login
@@ -142,7 +135,6 @@ const App = () => {
             padding: "40px",
             borderRadius: "12px",
             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            transition: "all 0.3s ease",
           }}
         >
           <h2 style={{ color: "#1b4332" }}>✅ Logged in successfully!</h2>

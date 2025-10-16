@@ -24,6 +24,7 @@ const Login = () => {
   return (
     <div>
       <h2 style={{ color: "#1b4332" }}>LMS Platform Login</h2>
+
       <button
         onClick={loginWithEmail}
         style={{
@@ -38,7 +39,9 @@ const Login = () => {
       >
         Sign in with Email
       </button>
+
       <br />
+
       <button
         onClick={loginWithGoogle}
         style={{
@@ -52,6 +55,13 @@ const Login = () => {
       >
         Sign in with Google
       </button>
+
+      <p style={{ marginTop: "15px" }}>
+        Don’t have an account?{" "}
+        <a href="/signup" style={{ color: "#0077b6" }}>
+          Sign Up
+        </a>
+      </p>
     </div>
   );
 };
