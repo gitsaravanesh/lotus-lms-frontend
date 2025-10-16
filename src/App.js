@@ -4,19 +4,20 @@ import Login from "./components/Login";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [isLoggedOut, setIsLoggedOut] = useState(false);
 
   const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-  const clientId = "1gd98lgt6jqtletgio0e2us33n"; // ✅ your public client ID
+  const clientId = "1gd98lgt6jqtletgio0e2us33n";
   const redirectUri = "https://dodyqytcfhwoe.cloudfront.net/";
   const tokenEndpoint = `${domain}/oauth2/token`;
 
-  // Helper to extract query parameters (like ?code=xxxx)
-  const getCodeFromUrl = () => {
+  // Extract query parameters from URL
+  const getQueryParam = (key) => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("code");
+    return params.get(key);
   };
 
-  // Exchange authorization code for tokens
+  // Exchange the authorization code for tokens
   const exchangeCodeForToken = async (code) => {
     try {
       const data = new URLSearchParams({
@@ -28,9 +29,7 @@ const App = () => {
 
       const response = await fetch(tokenEndpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: data.toString(),
       });
 
@@ -40,49 +39,56 @@ const App = () => {
       }
 
       const tokens = await response.json();
-      console.log("Tokens received:", tokens);
-
-      // Store ID token and Access token
       localStorage.setItem("id_token", tokens.id_token);
       localStorage.setItem("access_token", tokens.access_token);
 
-      // Decode ID token to extract email (optional)
-      const userPayload = JSON.parse(atob(tokens.id_token.split(".")[1]));
-      setUserEmail(userPayload.email || "User");
-
+      const payload = JSON.parse(atob(tokens.id_token.split(".")[1]));
+      setUserEmail(payload.email || "User");
       setIsAuthenticated(true);
-      window.history.replaceState({}, document.title, "/"); // clean URL
-    } catch (error) {
-      console.error("Error during token exchange:", error);
+      window.history.replaceState({}, document.title, "/");
+    } catch (err) {
+      console.error("Error exchanging token:", err);
     }
   };
 
-  // Logout function
+  // Handle logout
   const handleLogout = () => {
-    const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
-      redirectUri
-    )}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
-
-    // Clear local session
+    // Clear local/session storage
     localStorage.removeItem("id_token");
     localStorage.removeItem("access_token");
+    sessionStorage.clear();
+    setIsAuthenticated(false);
+    setIsLoggedOut(true);
 
-    // Redirect to Cognito logout
-    window.location.href = logoutUrl;
+    // Force Cognito to clear its cookie session by adding a random state param
+    const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+      redirectUri
+    )}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&response_type=code&state=${Date.now()}`;
+
+    // Redirect after short delay (for user experience)
+    setTimeout(() => {
+      window.location.href = logoutUrl;
+    }, 1000);
   };
 
-  // On mount, check for existing code or session
+  // Check for code or existing token on load
   useEffect(() => {
-    const code = getCodeFromUrl();
-
+    const code = getQueryParam("code");
     if (code) {
       exchangeCodeForToken(code);
     } else {
       const token = localStorage.getItem("id_token");
       if (token) {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setUserEmail(payload.email || "User");
-        setIsAuthenticated(true);
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUserEmail(payload.email || "User");
+          setIsAuthenticated(true);
+        } catch {
+          console.warn("Invalid token, clearing storage.");
+          localStorage.clear();
+        }
       }
     }
   }, []);
@@ -96,7 +102,38 @@ const App = () => {
       }}
     >
       {!isAuthenticated ? (
-        <Login />
+        isLoggedOut ? (
+          <div
+            style={{
+              background: "#f9f9f9",
+              display: "inline-block",
+              padding: "40px",
+              borderRadius: "12px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              transition: "all 0.3s ease",
+            }}
+          >
+            <h2 style={{ color: "#1b4332" }}>👋 You’ve been logged out!</h2>
+            <p>Thank you for using the LMS Platform.</p>
+            <button
+              onClick={() => setIsLoggedOut(false)}
+              style={{
+                backgroundColor: "#0077b6",
+                color: "#fff",
+                border: "none",
+                padding: "10px 25px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "15px",
+                marginTop: "10px",
+              }}
+            >
+              Go to Login
+            </button>
+          </div>
+        ) : (
+          <Login />
+        )
       ) : (
         <div
           style={{
@@ -105,6 +142,7 @@ const App = () => {
             padding: "40px",
             borderRadius: "12px",
             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            transition: "all 0.3s ease",
           }}
         >
           <h2 style={{ color: "#1b4332" }}>✅ Logged in successfully!</h2>

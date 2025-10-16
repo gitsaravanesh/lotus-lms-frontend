@@ -15,10 +15,10 @@ const Login = () => {
   };
 
   const loginWithGoogle = () => {
-    const loginUrl = `${domain}/oauth2/authorize?identity_provider=Google&client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
+    const googleUrl = `${domain}/oauth2/authorize?identity_provider=Google&client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
       scope
     )}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.href = loginUrl;
+    window.location.href = googleUrl;
   };
 
   return (
