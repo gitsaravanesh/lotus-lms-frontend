@@ -44,7 +44,7 @@ const App = () => {
       console.log("Logging out via:", logoutUrl);
 
       // Redirect to Cognito Hosted UI logout endpoint
-      window.location.replace(logoutUrl);
+      window.location.href = logoutUrl;
     } catch (error) {
       console.error("Logout error:", error);
     }
