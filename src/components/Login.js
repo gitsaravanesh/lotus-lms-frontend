@@ -11,24 +11,18 @@ const Login = () => {
     const loginUrl = `${domain}/login?client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
       scope
     )}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.assign(loginUrl);
+    window.location.href = loginUrl;
   };
 
   const loginWithGoogle = () => {
     const loginUrl = `${domain}/oauth2/authorize?identity_provider=Google&client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
       scope
     )}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.assign(loginUrl);
+    window.location.href = loginUrl;
   };
 
   return (
-    <div
-      style={{
-        textAlign: "center",
-        marginTop: "100px",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
-      }}
-    >
+    <div>
       <h2 style={{ color: "#1b4332" }}>LMS Platform Login</h2>
       <button
         onClick={loginWithEmail}
