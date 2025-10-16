@@ -23,27 +23,32 @@ const App = () => {
 
   const handleLogout = async () => {
     try {
-      await Auth.signOut({ global: true });
-      window.location.href = "https://dodyqytcfhwoe.cloudfront.net";
+      // Perform global sign out (ends all Cognito sessions)
+      await Auth.signOut({
+        global: true,
+        redirectSignOut: "https://dodyqytcfhwoe.cloudfront.net",
+      });
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return <p style={{ textAlign: "center" }}>Loading...</p>;
+  }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
+    <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "Arial" }}>
       {!user ? (
         <Login />
       ) : (
         <div>
           <h2>✅ Logged in successfully!</h2>
-          <p>Welcome, {user.attributes?.email}</p>
+          <p>Welcome, {user.attributes?.email || "user"} 🎉</p>
           <button
             onClick={handleLogout}
             style={{
-              background: "#e63946",
+              backgroundColor: "#e63946",
               color: "#fff",
               padding: "10px 20px",
               borderRadius: "8px",
@@ -51,7 +56,10 @@ const App = () => {
               cursor: "pointer",
               fontSize: "16px",
               marginTop: "20px",
+              transition: "0.3s ease",
             }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#c72c3a")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#e63946")}
           >
             Logout
           </button>
