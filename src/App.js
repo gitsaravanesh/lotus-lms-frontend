@@ -6,40 +6,42 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Detect logged-in user when app loads
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const currentUser = await Auth.currentAuthenticatedUser();
-        setUser(currentUser);
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
     checkUser();
   }, []);
 
-  // 🔹 Logout handler using Cognito Hosted UI logout endpoint
+  const checkUser = async () => {
+    try {
+      const currentUser = await Auth.currentAuthenticatedUser();
+      setUser(currentUser);
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
-      await Auth.signOut({
-        global: true,
-        // ✅ Must match Allowed sign-out URLs in Cognito
-        redirectSignOut: "https://dodyqytcfhwoe.cloudfront.net",
-      });
+      // Manually redirect to Cognito Hosted UI logout endpoint
+      const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
+      const clientId = "1gd98lgt6jqtletgio0e2us33n";
+      const logoutRedirect = "https://dodyqytcfhwoe.cloudfront.net";
+
+      // Hosted UI logout URL
+      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+        logoutRedirect
+      )}`;
+
+      // Redirect the browser manually
+      window.location.href = logoutUrl;
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  // 🔹 Show loading spinner until Amplify checks session
-  if (loading) {
-    return <p style={{ textAlign: "center" }}>Loading...</p>;
-  }
+  if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
-  // 🔹 Conditional rendering for login / dashboard
   return (
     <div
       style={{
@@ -49,10 +51,8 @@ const App = () => {
       }}
     >
       {!user ? (
-        // 🔸 Not logged in → Show Login screen
         <Login />
       ) : (
-        // 🔸 Logged in → Show dashboard
         <div
           style={{
             background: "#fff",
@@ -77,12 +77,8 @@ const App = () => {
               marginTop: "20px",
               transition: "0.3s ease",
             }}
-            onMouseOver={(e) =>
-              (e.target.style.backgroundColor = "#c72c3a")
-            }
-            onMouseOut={(e) =>
-              (e.target.style.backgroundColor = "#e63946")
-            }
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#c72c3a")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#e63946")}
           >
             Logout
           </button>
