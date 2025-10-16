@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Login from "./components/Login";
-import Signup from "./components/signup";
+import Signup from "./components/Signup";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
