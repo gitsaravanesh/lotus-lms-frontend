@@ -2,51 +2,66 @@ import React from "react";
 import { Auth } from "aws-amplify";
 
 const Login = () => {
-  const signInWithGoogle = () => {
-    Auth.federatedSignIn({ provider: "Google" });
+  const handleGoogleLogin = async () => {
+    try {
+      await Auth.federatedSignIn({ provider: "Google" });
+    } catch (error) {
+      console.error("Google login failed:", error);
+    }
   };
 
-  const signInWithEmail = () => {
-    Auth.federatedSignIn(); // Opens Cognito hosted login
+  const handleCognitoLogin = async () => {
+    try {
+      await Auth.federatedSignIn(); // hosted UI login
+    } catch (error) {
+      console.error("Cognito login failed:", error);
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Login to your LMS Account</h2>
-      <button style={styles.buttonGoogle} onClick={signInWithGoogle}>
+    <div
+      style={{
+        textAlign: "center",
+        background: "#fff",
+        padding: "40px",
+        borderRadius: "15px",
+        boxShadow: "0 0 20px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h2>Lotus LMS Platform</h2>
+      <button
+        onClick={handleGoogleLogin}
+        style={{
+          margin: "10px",
+          padding: "12px 25px",
+          border: "none",
+          borderRadius: "8px",
+          background: "#4285F4",
+          color: "white",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
         Sign in with Google
       </button>
-      <button style={styles.buttonEmail} onClick={signInWithEmail}>
+      <br />
+      <button
+        onClick={handleCognitoLogin}
+        style={{
+          margin: "10px",
+          padding: "12px 25px",
+          border: "none",
+          borderRadius: "8px",
+          background: "#444",
+          color: "white",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
         Sign in with Email
       </button>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    marginTop: "40px",
-  },
-  buttonGoogle: {
-    padding: "10px 20px",
-    margin: "10px",
-    backgroundColor: "#DB4437",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "16px",
-  },
-  buttonEmail: {
-    padding: "10px 20px",
-    margin: "10px",
-    backgroundColor: "#4285F4",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "16px",
-  },
 };
 
 export default Login;
