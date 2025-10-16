@@ -23,19 +23,16 @@ const App = () => {
 
   const handleLogout = async () => {
     try {
-      // Perform global sign out (ends all Cognito sessions)
       await Auth.signOut({
         global: true,
-        redirectSignOut: "https://dodyqytcfhwoe.cloudfront.net",
+        redirectSignOut: "https://dodyqytcfhwoe.cloudfront.net", // must be added in Cognito
       });
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  if (loading) {
-    return <p style={{ textAlign: "center" }}>Loading...</p>;
-  }
+  if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "Arial" }}>
@@ -56,7 +53,6 @@ const App = () => {
               cursor: "pointer",
               fontSize: "16px",
               marginTop: "20px",
-              transition: "0.3s ease",
             }}
             onMouseOver={(e) => (e.target.style.backgroundColor = "#c72c3a")}
             onMouseOut={(e) => (e.target.style.backgroundColor = "#e63946")}
