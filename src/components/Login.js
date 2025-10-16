@@ -1,67 +1,63 @@
-import React, { useState } from "react";
-import { Auth } from "aws-amplify";
-import EmailLogin from "./EmailLogin";
+import React from "react";
 
 const Login = () => {
-  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
+  const clientId = "1gd98lgt6jqtletgio0e2us33n";
+  const redirectUri = "https://dodyqytcfhwoe.cloudfront.net/";
+  const responseType = "code";
+  const scope = "email openid profile";
 
-  const handleGoogleLogin = async () => {
-    try {
-      await Auth.federatedSignIn({ provider: "Google" });
-    } catch (error) {
-      console.error("Google login failed:", error);
-    }
+  const loginWithEmail = () => {
+    const loginUrl = `${domain}/login?client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
+      scope
+    )}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    window.location.assign(loginUrl);
+  };
+
+  const loginWithGoogle = () => {
+    const loginUrl = `${domain}/oauth2/authorize?identity_provider=Google&client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(
+      scope
+    )}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    window.location.assign(loginUrl);
   };
 
   return (
     <div
       style={{
         textAlign: "center",
-        background: "#fff",
-        padding: "40px",
-        borderRadius: "15px",
-        boxShadow: "0 0 20px rgba(0,0,0,0.1)",
+        marginTop: "100px",
+        fontFamily: "Segoe UI, Roboto, sans-serif",
       }}
     >
-      <h2>Lotus LMS Platform</h2>
-
-      {!showEmailLogin ? (
-        <>
-          <button
-            onClick={handleGoogleLogin}
-            style={{
-              margin: "10px",
-              padding: "12px 25px",
-              border: "none",
-              borderRadius: "8px",
-              background: "#4285F4",
-              color: "white",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Sign in with Google
-          </button>
-          <br />
-          <button
-            onClick={() => setShowEmailLogin(true)}
-            style={{
-              margin: "10px",
-              padding: "12px 25px",
-              border: "none",
-              borderRadius: "8px",
-              background: "#444",
-              color: "white",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Sign in with Email
-          </button>
-        </>
-      ) : (
-        <EmailLogin />
-      )}
+      <h2 style={{ color: "#1b4332" }}>LMS Platform Login</h2>
+      <button
+        onClick={loginWithEmail}
+        style={{
+          backgroundColor: "#0077b6",
+          color: "#fff",
+          padding: "10px 25px",
+          border: "none",
+          borderRadius: "8px",
+          margin: "10px",
+          cursor: "pointer",
+        }}
+      >
+        Sign in with Email
+      </button>
+      <br />
+      <button
+        onClick={loginWithGoogle}
+        style={{
+          backgroundColor: "#d62828",
+          color: "#fff",
+          padding: "10px 25px",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        Sign in with Google
+      </button>
     </div>
   );
 };
