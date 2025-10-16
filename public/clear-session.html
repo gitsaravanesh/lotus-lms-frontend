@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Clearing session...</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signing out...</title>
     <script>
+      // Reads logout_url from query string and navigates to it after 800ms
+      const params = new URLSearchParams(window.location.search);
+      const logoutUrl = params.get("logout_url");
       setTimeout(() => {
-        const params = new URLSearchParams(window.location.search);
-        const logoutUrl = params.get("logout_url");
         if (logoutUrl) {
           window.location.href = decodeURIComponent(logoutUrl);
+        } else {
+          // fallback to home
+          window.location.href = "/";
         }
-      }, 1000);
+      }, 800);
     </script>
   </head>
-  <body
-    style="
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: sans-serif;
-    "
-  >
-    <h3>Signing out securely...</h3>
+  <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial, sans-serif;">
+    <div style="text-align:center;">
+      <h3>Signing out securely…</h3>
+      <p style="color:#666">Please wait a moment.</p>
+    </div>
   </body>
 </html>

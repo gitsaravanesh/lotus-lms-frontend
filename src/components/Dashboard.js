@@ -1,21 +1,25 @@
 // src/components/Dashboard.js
 import React from "react";
 
-const COGNITO_DOMAIN = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-const CLIENT_ID = "1gd98lgt6jqtletgio0e2us33n";
-const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net";
-
-function Dashboard() {
-  const handleLogout = () => {
-    const logoutUrl = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${REDIRECT_URI}&response_type=code&redirect_uri=${REDIRECT_URI}`;
-    window.location.href = logoutUrl;
-  };
+export default function Dashboard({ user, handleLogout }) {
+  // user may be passed as prop (decoded ID token) OR read from localStorage
+  let displayName = "User";
+  if (user?.email) displayName = user.email;
+  else {
+    const idToken = localStorage.getItem("id_token");
+    if (idToken) {
+      try {
+        const payload = JSON.parse(atob(idToken.split(".")[1]));
+        displayName = payload.email || payload.name || "User";
+      } catch {}
+    }
+  }
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2>✅ Logged in successfully!</h2>
-        <p>Welcome, user 🎉</p>
+        <h2>✅ Logged in</h2>
+        <p>Welcome, <strong>{displayName}</strong></p>
 
         <button onClick={handleLogout} style={styles.logoutBtn}>
           Logout
@@ -26,30 +30,7 @@ function Dashboard() {
 }
 
 const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#f8f9fa",
-  },
-  card: {
-    textAlign: "center",
-    padding: "2rem",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    background: "white",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  logoutBtn: {
-    backgroundColor: "#c1121f",
-    color: "white",
-    padding: "10px 25px",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginTop: "15px",
-  },
+  container: { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#f5f7fa" },
+  card: { padding: 28, borderRadius: 10, background: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.06)", textAlign: "center" },
+  logoutBtn: { backgroundColor: "#c1121f", color: "#fff", padding: "10px 20px", border: "none", borderRadius: 6, cursor: "pointer" },
 };
-
-export default Dashboard;
