@@ -21,26 +21,37 @@ const App = () => {
     }
   };
 
+  // ✅ Handle logout using Hosted UI redirect (correct method)
   const handleLogout = async () => {
     try {
-      // Manually redirect to Cognito Hosted UI logout endpoint
       const domain = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
       const clientId = "1gd98lgt6jqtletgio0e2us33n";
-      const logoutRedirect = "https://dodyqytcfhwoe.cloudfront.net";
 
-      // Hosted UI logout URL
+      // 🔹 Detect environment automatically
+      const isLocal = window.location.hostname === "localhost";
+
+      // Must have trailing slash `/`
+      const logoutRedirect = isLocal
+        ? "http://localhost:3000/"
+        : "https://dodyqytcfhwoe.cloudfront.net/";
+
+      // ✅ Proper Hosted UI logout endpoint
       const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
         logoutRedirect
       )}`;
 
-      // Redirect the browser manually
-      window.location.href = logoutUrl;
+      console.log("Logging out via:", logoutUrl);
+
+      // ✅ Redirect browser to logout endpoint
+      window.location.replace(logoutUrl);
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;
+  if (loading) {
+    return <p style={{ textAlign: "center", marginTop: "100px" }}>Loading...</p>;
+  }
 
   return (
     <div
@@ -60,10 +71,16 @@ const App = () => {
             borderRadius: "15px",
             boxShadow: "0 0 20px rgba(0,0,0,0.1)",
             display: "inline-block",
+            minWidth: "300px",
           }}
         >
-          <h2>✅ Logged in successfully!</h2>
-          <p>Welcome, {user.attributes?.email || "user"} 🎉</p>
+          <h2 style={{ color: "#333", marginBottom: "10px" }}>
+            ✅ Logged in successfully!
+          </h2>
+          <p style={{ color: "#555" }}>
+            Welcome, {user.attributes?.email || "user"} 🎉
+          </p>
+
           <button
             onClick={handleLogout}
             style={{
@@ -77,8 +94,12 @@ const App = () => {
               marginTop: "20px",
               transition: "0.3s ease",
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = "#c72c3a")}
-            onMouseOut={(e) => (e.target.style.backgroundColor = "#e63946")}
+            onMouseOver={(e) =>
+              (e.target.style.backgroundColor = "#c72c3a")
+            }
+            onMouseOut={(e) =>
+              (e.target.style.backgroundColor = "#e63946")
+            }
           >
             Logout
           </button>
