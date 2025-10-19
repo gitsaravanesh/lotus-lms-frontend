@@ -1,92 +1,46 @@
-// src/components/Login.js
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useAuth } from "../auth/AuthProvider";
 
-const COGNITO_DOMAIN = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-const CLIENT_ID = "1gd98lgt6jqtletgio0e2us33n";
-const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net";
+export default function Login() {
+  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-function Login() {
-  const navigate = useNavigate();
-
-  const handleLogin = () => {
-    const loginUrl = `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${REDIRECT_URI}`;
-    window.location.href = loginUrl;
-  };
-
-  const handleGoogleLogin = () => {
-    const googleUrl = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=Google&redirect_uri=${REDIRECT_URI}&response_type=CODE&client_id=${CLIENT_ID}&scope=email+openid+profile`;
-    window.location.href = googleUrl;
+  const handleLogin = (e) => {
+    e.preventDefault();
+    signInWithEmail();
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.page}>
       <div style={styles.card}>
-        <h2 style={{ marginBottom: "1.5rem" }}>LMS Platform Login</h2>
+        <h1 style={styles.title}>Lotus LMS</h1>
+        <p style={styles.subtitle}>Sign in to continue</p>
+        <form onSubmit={handleLogin} style={{ marginBottom: 20 }}>
+          <input type="email" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)} required style={styles.input} />
+          <input type="password" value={password} placeholder="Password" onChange={(e) => setPassword(e.target.value)} required style={styles.input} />
+          <button type="submit" style={styles.primary}>Sign in</button>
+        </form>
 
-        <button onClick={handleLogin} style={styles.emailBtn}>
-          Sign in with Email
-        </button>
-        <br />
+        <div style={styles.divider}><span style={styles.dividerText}>OR</span></div>
 
-        <button onClick={handleGoogleLogin} style={styles.googleBtn}>
+        <button onClick={signInWithGoogle} style={styles.google}>
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: 20, marginRight: 8 }} />
           Sign in with Google
         </button>
-
-        <p style={{ marginTop: "1.5rem" }}>
-          Don’t have an account?{" "}
-          <button
-            onClick={() => navigate("/signup")}
-            style={styles.linkBtn}
-          >
-            Sign Up
-          </button>
-        </p>
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#f8f9fa",
-  },
-  card: {
-    textAlign: "center",
-    padding: "2rem",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    background: "white",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  emailBtn: {
-    backgroundColor: "#0077b6",
-    color: "white",
-    padding: "10px 25px",
-    border: "none",
-    borderRadius: "5px",
-    marginBottom: "15px",
-    cursor: "pointer",
-  },
-  googleBtn: {
-    backgroundColor: "#db4437",
-    color: "white",
-    padding: "10px 25px",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-  linkBtn: {
-    background: "none",
-    border: "none",
-    color: "#0077b6",
-    textDecoration: "underline",
-    cursor: "pointer",
-  },
+  page: { height: "100vh", background: "linear-gradient(135deg, #0077b6, #00b4d8)", display: "flex", justifyContent: "center", alignItems: "center" },
+  card: { background: "#fff", borderRadius: 10, padding: "2.5rem", width: 360, boxShadow: "0 6px 20px rgba(0,0,0,0.15)", textAlign: "center" },
+  title: { color: "#023e8a", marginBottom: 10 },
+  subtitle: { color: "#555", marginBottom: 25 },
+  input: { width: "100%", padding: "10px", marginBottom: 10, borderRadius: 6, border: "1px solid #ccc" },
+  primary: { width: "100%", background: "#0077b6", color: "#fff", border: "none", borderRadius: 6, padding: "12px 0", fontSize: 15, cursor: "pointer" },
+  divider: { margin: "20px 0", borderBottom: "1px solid #ddd", position: "relative" },
+  dividerText: { position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: "#fff", padding: "0 10px", fontSize: 12 },
+  google: { width: "100%", background: "#fff", border: "1px solid #ccc", borderRadius: 6, padding: "12px 0", cursor: "pointer" },
 };
-
-export default Login;

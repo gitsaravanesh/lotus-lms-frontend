@@ -1,47 +1,56 @@
-// src/components/Signup.js
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-/* Update if needed */
-const COGNITO_DOMAIN = "https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-const CLIENT_ID = "1gd98lgt6jqtletgio0e2us33n";
-const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
+import { useAuth } from "../auth/AuthProvider";
 
 export default function Signup() {
+  const { signUpWithEmail, signUpWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    topic: "Cloud",
+    password: "",
+    confirm: "",
+  });
 
-  const signupWithEmail = () => {
-    const url = `${COGNITO_DOMAIN}/signup?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}`;
-    window.location.href = url;
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const signupWithGoogle = () => {
-    const url = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=Google&client_id=${CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}`;
-    window.location.href = url;
+  const handleSignup = (e) => {
+    e.preventDefault();
+    if (form.password !== form.confirm) return alert("Passwords do not match!");
+    signUpWithEmail();
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.page}>
       <div style={styles.card}>
-        <h2>Create your account</h2>
-        <p style={{ color: "#666" }}>Sign up with your email or a Google account</p>
+        <h1 style={styles.title}>Lotus LMS</h1>
+        <p style={styles.subtitle}>Create your learning account</p>
 
-        <button onClick={signupWithEmail} style={styles.buttonPrimary}>
-          Sign Up with Email
+        <form onSubmit={handleSignup}>
+          <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} required style={styles.input} />
+          <input name="email" placeholder="Email" type="email" value={form.email} onChange={handleChange} required style={styles.input} />
+          <select name="topic" value={form.topic} onChange={handleChange} style={styles.input}>
+            <option value="Cloud">Cloud</option>
+            <option value="AI">AI</option>
+            <option value="Full Stack">Full Stack</option>
+            <option value="Testing">Testing</option>
+          </select>
+          <input name="password" placeholder="Password" type="password" value={form.password} onChange={handleChange} required style={styles.input} />
+          <input name="confirm" placeholder="Confirm Password" type="password" value={form.confirm} onChange={handleChange} required style={styles.input} />
+          <button type="submit" style={styles.primary}>Sign up</button>
+        </form>
+
+        <div style={styles.divider}><span style={styles.dividerText}>OR</span></div>
+
+        <button onClick={signUpWithGoogle} style={styles.google}>
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: 20, marginRight: 8 }} />
+          Sign up with Google
         </button>
 
-        <button onClick={signupWithGoogle} style={styles.buttonGoogle}>
-          Sign Up with Google
-        </button>
-
-        <div style={{ marginTop: 18 }}>
-          <button onClick={() => navigate("/")} style={styles.linkBtn}>
-            Back to Login
-          </button>
+        <div style={{ marginTop: 20 }}>
+          <span>Already have an account?</span>{" "}
+          <button onClick={() => navigate("/")} style={styles.link}>Sign in</button>
         </div>
       </div>
     </div>
@@ -49,9 +58,13 @@ export default function Signup() {
 }
 
 const styles = {
-  container: { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#f5f7fa" },
-  card: { padding: 28, borderRadius: 10, background: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.06)", textAlign: "center" },
-  buttonPrimary: { display: "block", width: 280, margin: "10px auto", padding: "10px 20px", background: "#0077b6", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" },
-  buttonGoogle: { display: "block", width: 280, margin: "10px auto", padding: "10px 20px", background: "#db4437", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" },
-  linkBtn: { background: "none", border: "none", color: "#0077b6", textDecoration: "underline", cursor: "pointer" },
+  page: { height: "100vh", background: "linear-gradient(135deg, #0077b6, #00b4d8)", display: "flex", justifyContent: "center", alignItems: "center" },
+  card: { background: "#fff", borderRadius: 10, padding: "2.5rem", width: 360, boxShadow: "0 6px 20px rgba(0,0,0,0.15)", textAlign: "center" },
+  title: { color: "#023e8a", marginBottom: 10 },
+  subtitle: { color: "#555", marginBottom: 25 },
+  input: { width: "100%", padding: "10px", marginBottom: 10, borderRadius: 6, border: "1px solid #ccc" },
+  primary: { width: "100%", background: "#0077b6", color: "#fff", border: "none", borderRadius: 6, padding: "12px 0", fontSize: 15, cursor: "pointer" },
+  divider: { margin: "20px 0", borderBottom: "1px solid #ddd", position: "relative" },
+  dividerText: { position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: "#fff", padding: "0 10px", fontSize: 12 },
+  google: { width: "100%", background: "#fff", border: "1px solid #ccc", borderRadius: 6, padding: "12px 0", cursor: "pointer" },
 };
