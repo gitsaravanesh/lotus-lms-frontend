@@ -1,69 +1,69 @@
+// src/auth/AuthProvider.js
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  exchangeCodeForTokens,
-  refreshTokens,
-  getUserFromIdToken,
-  clearTokens,
-} from "./authService";
-import { COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI, LOGOUT_ENDPOINT, SCOPE } from "./config";
+import { useNavigate } from "react-router-dom";
+import { exchangeCodeForToken, signOut } from "./authService";
+import { COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI } from "./config";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => getUserFromIdToken());
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
-  const buildUrl = (path, extra = "") =>
-    `${COGNITO_DOMAIN}/${path}?client_id=${CLIENT_ID}&response_type=code&scope=${encodeURIComponent(
-      SCOPE
-    )}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}${extra}`;
-
+  // Handle Cognito redirect with ?code=
   useEffect(() => {
-    (async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
 
-        if (code) {
-          await exchangeCodeForTokens(code);
-          setUser(getUserFromIdToken());
-          window.history.replaceState({}, "", "/");
-        } else {
-          const u = getUserFromIdToken();
-          if (u && u.exp > Date.now() / 1000) setUser(u);
-          else await refreshTokens();
-        }
-      } catch {
-        clearTokens();
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    if (code) {
+      // Exchange the code for tokens
+      exchangeCodeForToken(code)
+        .then((tokens) => {
+          localStorage.setItem("id_token", tokens.id_token);
+          localStorage.setItem("access_token", tokens.access_token);
+          setUser({ name: parseJwt(tokens.id_token)?.name || "User" });
+          navigate("/dashboard");
+        })
+        .catch((err) => console.error("Token exchange failed:", err));
+    }
+  }, [navigate]);
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated: !!user,
-    signInWithEmail: () => (window.location.href = buildUrl("login")),
-    signInWithGoogle: () =>
-      (window.location.href = buildUrl("oauth2/authorize", "&identity_provider=Google")),
-    signUpWithEmail: () => (window.location.href = buildUrl("signup")),
-    signUpWithGoogle: () =>
-      (window.location.href = buildUrl("oauth2/authorize", "&identity_provider=Google")),
-    handleLogout: () => {
-      clearTokens();
-      const logoutUrl = `${LOGOUT_ENDPOINT}?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(
-        REDIRECT_URI
-      )}`;
-      const clearUrl = `${REDIRECT_URI}clear-session.html?logout_url=${encodeURIComponent(
-        logoutUrl
-      )}`;
-      window.location.href = clearUrl;
-    },
+  // Decode JWT to extract user info
+  const parseJwt = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      return JSON.parse(window.atob(base64));
+    } catch {
+      return null;
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  const signInWithEmail = () => {
+    window.location.href = `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}`;
+  };
+
+  const signInWithGoogle = () => {
+    window.location.href = `${COGNITO_DOMAIN}/oauth2/authorize?identity_provider=Google&response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&scope=email+openid+profile`;
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    signOut();
+    setUser(null);
+    navigate("/");
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ user, signInWithEmail, signInWithGoogle, logout }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
