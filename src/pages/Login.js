@@ -1,17 +1,10 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { signInWithEmail, signInWithGoogle } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    signInWithEmail();
-  };
 
   return (
     <div style={styles.page}>
@@ -19,49 +12,22 @@ export default function Login() {
         <h1 style={styles.title}>Lotus LMS</h1>
         <p style={styles.subtitle}>Sign in to continue</p>
 
-        <form onSubmit={handleLogin} style={{ marginBottom: 20 }}>
-          <input
-            type="email"
-            value={email}
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <input
-            type="password"
-            value={password}
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
-          <button type="submit" style={styles.primary}>
-            Sign in
-          </button>
-        </form>
+        <button onClick={signInWithEmail} style={styles.primary}>
+          Sign in with Email
+        </button>
 
-        <div style={styles.divider}>
-          <span style={styles.dividerText}>OR</span>
-        </div>
+        <div style={styles.divider}>or</div>
 
         <button onClick={signInWithGoogle} style={styles.google}>
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            style={{ width: 20, marginRight: 8 }}
-          />
           Sign in with Google
         </button>
 
-        <div style={styles.footer}>
-          <p style={{ marginTop: 20 }}>
-            Don’t have an account?{" "}
-            <button onClick={() => navigate("/signup")} style={styles.link}>
-              Sign up
-            </button>
-          </p>
-        </div>
+        <p style={styles.footer}>
+          Don’t have an account?{" "}
+          <span onClick={() => navigate("/signup")} style={styles.link}>
+            Sign up
+          </span>
+        </p>
       </div>
     </div>
   );
@@ -78,20 +44,13 @@ const styles = {
   card: {
     background: "#fff",
     borderRadius: 10,
-    padding: "2.5rem",
+    padding: "2rem",
     width: 360,
     boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
     textAlign: "center",
   },
   title: { color: "#023e8a", marginBottom: 10 },
   subtitle: { color: "#555", marginBottom: 25 },
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: 10,
-    borderRadius: 6,
-    border: "1px solid #ccc",
-  },
   primary: {
     width: "100%",
     background: "#0077b6",
@@ -102,16 +61,7 @@ const styles = {
     fontSize: 15,
     cursor: "pointer",
   },
-  divider: { margin: "20px 0", borderBottom: "1px solid #ddd", position: "relative" },
-  dividerText: {
-    position: "absolute",
-    top: "-12px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    background: "#fff",
-    padding: "0 10px",
-    fontSize: 12,
-  },
+  divider: { margin: "20px 0", color: "#aaa" },
   google: {
     width: "100%",
     background: "#fff",
@@ -119,16 +69,7 @@ const styles = {
     borderRadius: 6,
     padding: "12px 0",
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
-  footer: { fontSize: 14 },
-  link: {
-    background: "none",
-    border: "none",
-    color: "#0077b6",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
+  footer: { marginTop: 20, color: "#333" },
+  link: { color: "#0077b6", cursor: "pointer", fontWeight: "bold" },
 };

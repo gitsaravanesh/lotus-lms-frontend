@@ -1,4 +1,3 @@
-// src/auth/authService.js
 import axios from "axios";
 import { COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI } from "./config";
 
