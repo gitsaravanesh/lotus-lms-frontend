@@ -1,23 +1,29 @@
 import axios from "axios";
-import { COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI } from "./config";
 
-export async function exchangeCodeForToken(code) {
-  const params = new URLSearchParams();
-  params.append("grant_type", "authorization_code");
-  params.append("client_id", CLIENT_ID);
-  params.append("code", code);
-  params.append("redirect_uri", REDIRECT_URI);
+const CLIENT_ID = "1gd98lgt6jqtletgio0e2us33n";
+const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
+const DOMAIN = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
 
-  const res = await axios.post(`${COGNITO_DOMAIN}/oauth2/token`, params, {
+export const exchangeCodeForToken = async (code) => {
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    code,
+  });
+
+  const response = await axios.post(`https://${DOMAIN}/oauth2/token`, body, {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   });
 
-  return res.data;
-}
+  return response.data;
+};
 
-export function signOut() {
-  const logoutUrl = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}`;
-  window.location.href = logoutUrl;
-}
+export const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    console.error("Failed to parse JWT", e);
+    return {};
+  }
+};

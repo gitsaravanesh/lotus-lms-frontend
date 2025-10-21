@@ -1,20 +1,24 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./auth/AuthProvider";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import { AuthProvider } from "./auth/AuthProvider";
+import "./styles.css";
 
-export default function App() {
+const App = () => {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
-}
+};
+
+export default App;
