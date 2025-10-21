@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
           console.error("Token exchange failed:", err);
 
           // --- NEW: Detect disabled user error ---
-          if (err.response?.data?.error_description?.includes("User is disabled")) {
+          if (err.response?.data?.error_description?.includes("User is not enabled")) {
             setErrorMessage(
               "Your account has been disabled. Please contact the administrator."
             );
