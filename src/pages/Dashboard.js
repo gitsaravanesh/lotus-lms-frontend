@@ -7,8 +7,8 @@ export default function Dashboard() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2>✅ Logged in successfully!</h2>
-        <p>Welcome, {user?.name || "User"} 🎉</p>
+        <h2>Welcome, {user?.name || "User"} 🎉</h2>
+        <p>You are now logged in to Lotus LMS.</p>
         <button onClick={logout} style={styles.logout}>
           Logout
         </button>
@@ -23,13 +23,13 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#f0f4f8",
+    background: "#f5f7fa",
   },
   card: {
-    textAlign: "center",
     background: "#fff",
     padding: "2rem",
     borderRadius: 10,
+    textAlign: "center",
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
   },
   logout: {
