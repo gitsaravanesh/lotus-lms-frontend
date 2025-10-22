@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CognitoUserPool } from "amazon-cognito-identity-js";
+import { CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { Link } from "react-router-dom";
 
 const poolData = {
@@ -23,11 +23,18 @@ const Signup = () => {
     setMessage("");
     setError("");
 
+    // Create base required attributes
     const attributeList = [
-      { Name: "email", Value: email },
-      { Name: "name", Value: name },
-      { Name: "custom:interestedTopic", Value: topic },
+      new CognitoUserAttribute({ Name: "email", Value: email }),
+      new CognitoUserAttribute({ Name: "name", Value: name }),
     ];
+
+    // Only add interested topic if selected
+    if (topic) {
+      attributeList.push(
+        new CognitoUserAttribute({ Name: "custom:interestedTopic", Value: topic })
+      );
+    }
 
     userPool.signUp(email, password, attributeList, null, (err, result) => {
       if (err) {
@@ -77,12 +84,13 @@ const Signup = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <label>Interested Topics</label>
+          <label>Interested Topics (Optional)</label>
           <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-            <option>Cloud</option>
-            <option>AI</option>
-            <option>Full Stack</option>
-            <option>Testing</option>
+            <option value="">Select a topic</option>
+            <option value="Cloud">Cloud</option>
+            <option value="AI">AI</option>
+            <option value="Full Stack">Full Stack</option>
+            <option value="Testing">Testing</option>
           </select>
           <button type="submit">Sign Up</button>
         </form>
