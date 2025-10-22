@@ -23,17 +23,25 @@ const Signup = () => {
     setMessage("");
     setError("");
 
-    // Create base required attributes
+    // Create base required attributes (email and name are standard attributes)
     const attributeList = [
       new CognitoUserAttribute({ Name: "email", Value: email }),
       new CognitoUserAttribute({ Name: "name", Value: name }),
     ];
 
-    // Only add interested topic if selected
-    if (topic) {
-      attributeList.push(
-        new CognitoUserAttribute({ Name: "custom:interestedTopic", Value: topic })
-      );
+    // Only add interested topic if a value is actually selected
+    if (topic && topic !== "") {
+      try {
+        attributeList.push(
+          new CognitoUserAttribute({ 
+            Name: "custom:interest", // Changed from custom:interestedTopic to match Cognito
+            Value: topic 
+          })
+        );
+      } catch (err) {
+        console.warn("Failed to add custom attribute:", err);
+        // Continue signup without the topic if it fails
+      }
     }
 
     userPool.signUp(email, password, attributeList, null, (err, result) => {
