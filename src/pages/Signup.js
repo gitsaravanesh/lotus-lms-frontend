@@ -23,10 +23,9 @@ const Signup = () => {
     setMessage("");
     setError("");
 
-    // Create base required attributes (email and name are standard attributes)
+    // Create base required attributes - only email is writable according to screenshot
     const attributeList = [
       new CognitoUserAttribute({ Name: "email", Value: email }),
-      new CognitoUserAttribute({ Name: "name", Value: name }),
     ];
 
     // Only add interested topic if a value is actually selected
