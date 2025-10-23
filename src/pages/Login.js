@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // add useNavigate
 import { useAuth } from "../auth/AuthProvider";
 import { CognitoUser, AuthenticationDetails, CognitoUserPool } from "amazon-cognito-identity-js";
 
@@ -12,12 +12,16 @@ const userPool = new CognitoUserPool(poolData);
 
 const Login = () => {
   const { user } = useAuth();
+  const navigate = useNavigate(); // <- add
+
   const [identifier, setIdentifier] = useState("");  // Can be username or email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   if (user) {
-    window.location.href = "/dashboard";
+    // client-side navigation avoids asking the server for /dashboard
+    navigate("/dashboard");
+    return null;
   }
 
   const handleEmailPasswordSignIn = (e) => {
@@ -39,7 +43,8 @@ const Login = () => {
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: (result) => {
         console.log("Login success!", result);
-        window.location.href = "/dashboard";
+        // use client-side navigation
+        navigate("/dashboard");
       },
       onFailure: (err) => {
         console.error("Login error:", err);
