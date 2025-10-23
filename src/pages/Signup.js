@@ -3,8 +3,8 @@ import { CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-j
 import { Link } from "react-router-dom";
 
 const poolData = {
-  UserPoolId: "ap-south-1_Tslt1HUCC", // 🔁 replace with your Cognito User Pool ID
-  ClientId: "1gd98lgt6jqtletgio0e2us33n", // 🔁 your App Client ID
+  UserPoolId: "ap-south-1_6C5lP9yfm", // 🔁 replace with your Cognito User Pool ID
+  ClientId: "49gusp4sidkggc371vghtdvujb", // 🔁 your App Client ID
 };
 
 const userPool = new CognitoUserPool(poolData);
