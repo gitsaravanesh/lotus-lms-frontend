@@ -12,7 +12,7 @@ const userPool = new CognitoUserPool(poolData);
 
 const Login = () => {
   const { user } = useAuth();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");  // Can be username or email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -25,12 +25,12 @@ const Login = () => {
     setError("");
 
     const userData = {
-      Username: email,
+      Username: identifier,  // Can be username or email (alias)
       Pool: userPool,
     };
 
     const authDetails = new AuthenticationDetails({
-      Username: email,
+      Username: identifier,
       Password: password,
     });
 
@@ -43,7 +43,13 @@ const Login = () => {
       },
       onFailure: (err) => {
         console.error("Login error:", err);
-        setError(err.message || "Failed to login. Please try again.");
+        if (err.code === 'UserNotConfirmedException') {
+          setError(
+            "Please verify your email address first. Check your inbox for a verification link."
+          );
+        } else {
+          setError(err.message || "Failed to login. Please try again.");
+        }
       },
     });
   };
@@ -65,10 +71,10 @@ const Login = () => {
         
         <form onSubmit={handleEmailPasswordSignIn}>
           <input 
-            type="email" 
-            placeholder="Email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"  // Changed to text to accept both email and username
+            placeholder="Username or Email" 
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
           />
           <input 
