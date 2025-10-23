@@ -14,7 +14,6 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState(""); // Add confirm password
-  const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
