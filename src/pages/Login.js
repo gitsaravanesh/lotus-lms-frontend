@@ -98,7 +98,7 @@ const Login = () => {
         
         <button className="google-btn" onClick={handleGoogleSignIn}>
           <img
-            src="https://commons.wikimedia.org/wiki/File:Google_%22G%22_logo.svg#/media/File:Google_%22G%22_logo.svg"
+            src="https://www.google.com/favicon.ico"
             alt="Google"
           />
           Sign in with Google
