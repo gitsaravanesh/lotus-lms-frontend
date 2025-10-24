@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
 
     const domain = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-    const clientId = "1gd98lgt6jqtletgio0e2us33n";
+    const clientId = "49gusp4sidkggc371vghtdvujb";
 
     // Detect environment dynamically
     const redirectUri =
