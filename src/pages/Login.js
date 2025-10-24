@@ -61,7 +61,7 @@ const Login = () => {
 
   const handleGoogleSignIn = () => {
     const DOMAIN = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-    const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
+    const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net";
     const CLIENT_ID = "49gusp4sidkggc371vghtdvujb";
 
     const url = `https://${DOMAIN}/oauth2/authorize?client_id=${CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${REDIRECT_URI}&identity_provider=Google`;
