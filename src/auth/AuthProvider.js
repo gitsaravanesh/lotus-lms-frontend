@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    // 🟢 Handle Cognito OAuth redirect (code exchange)
+    // 🟢 Handle OAuth2 redirect (Google / Hosted UI)
     const code = params.get("code");
     if (code) {
       exchangeCodeForToken(code)
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
         })
         .finally(() => setLoading(false));
     } else {
-      // 🟣 Load user from localStorage (if already logged in)
+      // 🟣 Load user from localStorage (for SDK login)
       const token = localStorage.getItem("id_token");
       if (token) {
         const payload = parseJwt(token);
@@ -74,27 +74,44 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🚀 Fixed logout handler for correct client + redirect_uri param
-  const logout = () => {
-    localStorage.removeItem("id_token");
-    setUser(null);
+  // 🚀 Dual-mode logout handler (Hosted UI + SDK)
+  const logout = async () => {
+    try {
+      localStorage.removeItem("id_token");
+      setUser(null);
 
-    const domain = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-    const clientId = "49gusp4sidkggc371vghtdvujb"; // ✅ correct client ID
-
-    // Detect environment dynamically
-    const redirectUri =
-      window.location.origin.includes("localhost")
+      // Hosted UI logout for Google/OAuth users
+      const domain = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
+      const clientId = "49gusp4sidkggc371vghtdvujb";
+      const redirectUri = window.location.origin.includes("localhost")
         ? "http://localhost:3000/"
         : "https://dodyqytcfhwoe.cloudfront.net/";
 
-    // ✅ Use redirect_uri (not logout_uri)
-    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}`;
+      // Try to sign out SDK user first (username/password)
+      const { CognitoUserPool } = await import("amazon-cognito-identity-js");
+      const poolData = {
+        UserPoolId: "ap-south-1_6C5lP9yfm",
+        ClientId: "49gusp4sidkggc371vghtdvujb",
+      };
+      const userPool = new CognitoUserPool(poolData);
+      const cognitoUser = userPool.getCurrentUser();
 
-    console.log("Redirecting to logout URL:", logoutUrl);
-    window.location.href = logoutUrl;
+      if (cognitoUser) {
+        cognitoUser.signOut();
+        window.location.href = "/"; // go to login (home)
+        return;
+      }
+
+      // If no SDK session, fallback to Hosted UI logout
+      const logoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+        redirectUri
+      )}`;
+      console.log("Redirecting to Cognito logout:", logoutUrl);
+      window.location.href = logoutUrl;
+    } catch (err) {
+      console.error("Logout failed:", err);
+      window.location.href = "/";
+    }
   };
 
   return (
