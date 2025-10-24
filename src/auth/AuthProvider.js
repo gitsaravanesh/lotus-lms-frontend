@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("id_token");
-    const logoutUrl = `https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com/logout?client_id=1gd98lgt6jqtletgio0e2us33n&logout_uri=https://dodyqytcfhwoe.cloudfront.net/`;
+    const logoutUrl = `https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com/logout?client_id=49gusp4sidkggc371vghtdvujbn&logout_uri=https://dodyqytcfhwoe.cloudfront.net/`;
     window.location.href = logoutUrl;
   };
 
