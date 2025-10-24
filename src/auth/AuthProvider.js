@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { exchangeCodeForToken, parseJwt } from "./authService";
 
 const AuthContext = createContext();
-
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -13,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
-    // 🔴 1. Handle Cognito redirect errors (e.g., disabled/not enabled)
+    // 🔴 Handle Cognito redirect errors
     const error = params.get("error");
     const errorDescription = params.get("error_description");
 
@@ -34,7 +33,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    // 🟢 2. Handle successful login redirect (authorization code)
+    // 🟢 Handle Cognito OAuth redirect (code exchange)
     const code = params.get("code");
     if (code) {
       exchangeCodeForToken(code)
@@ -65,7 +64,7 @@ export const AuthProvider = ({ children }) => {
         })
         .finally(() => setLoading(false));
     } else {
-      // 🟣 3. If already logged in, load user from localStorage
+      // 🟣 Load user from localStorage (if already logged in)
       const token = localStorage.getItem("id_token");
       if (token) {
         const payload = parseJwt(token);
@@ -75,14 +74,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // 🚀 Dynamic logout handler (works for both local + CloudFront)
   const logout = () => {
     localStorage.removeItem("id_token");
-    const logoutUrl = `https://lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com/logout?client_id=49gusp4sidkggc371vghtdvujb&logout_uri=https://dodyqytcfhwoe.cloudfront.net/`;
+    setUser(null);
+
+    const domain = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
+    const clientId = "1gd98lgt6jqtletgio0e2us33n";
+
+    // Detect environment dynamically
+    const redirectUri =
+      window.location.origin.includes("localhost")
+        ? "http://localhost:3000/"
+        : "https://dodyqytcfhwoe.cloudfront.net/";
+
+    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+      redirectUri
+    )}`;
+
+    console.log("Redirecting to logout URL:", logoutUrl);
     window.location.href = logoutUrl;
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, errorMessage, setErrorMessage }}>
+    <AuthContext.Provider
+      value={{ user, setUser, logout, errorMessage, setErrorMessage }}
+    >
       {!loading && children}
       {errorMessage && (
         <div className="error-banner">
