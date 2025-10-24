@@ -74,13 +74,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🚀 Dynamic logout handler (works for both local + CloudFront)
+  // 🚀 Fixed logout handler for correct client + redirect_uri param
   const logout = () => {
     localStorage.removeItem("id_token");
     setUser(null);
 
     const domain = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
-    const clientId = "49gusp4sidkggc371vghtdvujb";
+    const clientId = "49gusp4sidkggc371vghtdvujb"; // ✅ correct client ID
 
     // Detect environment dynamically
     const redirectUri =
@@ -88,7 +88,8 @@ export const AuthProvider = ({ children }) => {
         ? "http://localhost:3000/"
         : "https://dodyqytcfhwoe.cloudfront.net/";
 
-    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+    // ✅ Use redirect_uri (not logout_uri)
+    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri
     )}`;
 
