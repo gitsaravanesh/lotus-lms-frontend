@@ -1,50 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
-import "../styles.css";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [courses, setCourses] = useState([]);
   const [error, setError] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
+  // Fetch courses for the logged-in trainer
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/courses`, {
-          headers: { "x-tenant-id": "trainer1" },
-        });
-        if (!response.ok) throw new Error("Failed to fetch courses");
-        const data = await response.json();
-        setCourses(data.items || []);
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-        setError("Unable to load courses. Please try again later.");
-      }
-    };
-    fetchCourses();
-  }, [API_BASE_URL]);
+    fetch(`${API_BASE_URL}/courses`, {
+      headers: { "x-tenant-id": "trainer1" },
+    })
+      .then((res) => res.json())
+      .then((data) => setCourses(data.items || []))
+      .catch(() =>
+        setError("Unable to load courses. Please try again later.")
+      );
+  }, []);
 
-  // Load Razorpay script dynamically
-  const loadRazorpayScript = (callback) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/payment-button.js";
-    script.async = true;
-    script.dataset.payment_button_id = "pl_RblcRcpAdBysab"; // your payment button id
-    script.onload = callback;
-    document.body.appendChild(script);
-  };
-
-  const handleBuy = (course) => {
-    // Cleanup any old Razorpay script if exists
-    const oldScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/payment-button.js"]');
-    if (oldScript) oldScript.remove();
-
-    loadRazorpayScript(() => {
-      console.log("Razorpay Checkout Loaded for", course.title);
-    });
-  };
+  // Dynamically load Razorpay script only when needed
+  useEffect(() => {
+    if (selectedCourse) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/payment-button.js";
+      script.setAttribute("data-payment_button_id", "pl_RblcRcpAdBysab");
+      script.async = true;
+      const container = document.getElementById("razorpay-container");
+      container.innerHTML = "";
+      container.appendChild(script);
+    }
+  }, [selectedCourse]);
 
   return (
     <div className="dashboard">
@@ -56,31 +44,44 @@ const Dashboard = () => {
 
       <div className="courses-section">
         <h3>📚 Available Courses</h3>
-        {error ? (
-          <p className="error-text">{error}</p>
-        ) : courses.length === 0 ? (
-          <p>Loading courses...</p>
-        ) : (
-          <div className="course-list">
-            {courses.map((course) => (
-              <div key={course.course_id} className="course-card">
-                <h4>{course.title}</h4>
-                <p>{course.description}</p>
-                <p>
-                  💰 <b>{course.price === 0 ? "Free" : `₹${course.price} ${course.currency}`}</b>
-                </p>
-                {course.price === 0 ? (
-                  <button className="free-btn">Enroll for Free</button>
-                ) : (
-                  <button className="buy-btn" onClick={() => handleBuy(course)}>
-                    Buy Now
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {error && <p className="error">{error}</p>}
+
+        <div className="course-list">
+          {courses.map((course) => (
+            <div className="course-card" key={course.course_id}>
+              <h4>{course.title}</h4>
+              <p>{course.description}</p>
+              <p>
+                💰 <strong>{course.price}</strong> {course.currency}
+              </p>
+              <button
+                onClick={() => setSelectedCourse(course)}
+                className="buy-btn"
+              >
+                Buy Now
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {selectedCourse && (
+        <div className="payment-modal">
+          <div className="payment-card">
+            <h4>Proceed to Payment</h4>
+            <p>
+              You are purchasing: <strong>{selectedCourse.title}</strong>
+            </p>
+            <div id="razorpay-container"></div>
+            <button
+              className="cancel-btn"
+              onClick={() => setSelectedCourse(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
