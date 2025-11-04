@@ -9,28 +9,34 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  // Fetch courses for the logged-in trainer
+  // Fetch courses
   useEffect(() => {
     fetch(`${API_BASE_URL}/courses`, {
       headers: { "x-tenant-id": "trainer1" },
     })
       .then((res) => res.json())
       .then((data) => setCourses(data.items || []))
-      .catch(() =>
-        setError("Unable to load courses. Please try again later.")
-      );
+      .catch(() => setError("Unable to load courses. Please try again later."));
   }, []);
 
-  // Dynamically load Razorpay script only when needed
+  // Load Razorpay button dynamically inside a form
   useEffect(() => {
     if (selectedCourse) {
+      const container = document.getElementById("razorpay-container");
+      container.innerHTML = "";
+
+      // Create a form element
+      const form = document.createElement("form");
+      form.setAttribute("id", "razorpay-form");
+
+      // Create Razorpay script inside that form
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/payment-button.js";
       script.setAttribute("data-payment_button_id", "pl_RblcRcpAdBysab");
       script.async = true;
-      const container = document.getElementById("razorpay-container");
-      container.innerHTML = "";
-      container.appendChild(script);
+
+      form.appendChild(script);
+      container.appendChild(form);
     }
   }, [selectedCourse]);
 
