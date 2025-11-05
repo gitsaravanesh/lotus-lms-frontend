@@ -309,3 +309,52 @@ button:hover {
 .cancel-btn:hover {
   background: #c0392b;
 }
+
+/* Add to existing styles.css */
+
+/* Payment related styles */
+.payment-error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border-left: 4px solid #d32f2f;
+}
+
+.payment-success {
+  color: #388e3c;
+  background-color: #e8f5e9;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border-left: 4px solid #388e3c;
+}
+
+/* Enhanced button styles */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+.enroll-button {
+  background: #28a745;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.enroll-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+.enroll-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
