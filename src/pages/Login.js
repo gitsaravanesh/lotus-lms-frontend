@@ -11,7 +11,7 @@ const poolData = {
 const userPool = new CognitoUserPool(poolData);
 
 const Login = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth(); // ✅ Add setUser here
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +39,16 @@ const Login = () => {
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: (result) => {
         console.log("✅ Login success!", result);
-        navigate("/dashboard");
+        
+        // ✅ Store the ID token in localStorage
+        const idToken = result.getIdToken().getJwtToken();
+        localStorage.setItem("id_token", idToken);
+        
+        // ✅ Update the user state in AuthProvider
+        const payload = JSON.parse(atob(idToken.split(".")[1]));
+        setUser({ name: payload.name || payload.email || identifier });
+        
+        // Navigation will happen automatically via useEffect
       },
       onFailure: (err) => {
         console.error("❌ Login error:", err);
