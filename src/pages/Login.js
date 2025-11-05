@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // add useNavigate
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { CognitoUser, AuthenticationDetails, CognitoUserPool } from "amazon-cognito-identity-js";
 
@@ -12,27 +12,23 @@ const userPool = new CognitoUserPool(poolData);
 
 const Login = () => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // <- add
-
-  const [identifier, setIdentifier] = useState("");  // Can be username or email
+  const navigate = useNavigate();
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  if (user) {
-    // client-side navigation avoids asking the server for /dashboard
-    navigate("/dashboard");
-    return null;
-  }
+  // ✅ Redirect only when user is available
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   const handleEmailPasswordSignIn = (e) => {
     e.preventDefault();
     setError("");
 
-    const userData = {
-      Username: identifier,  // Can be username or email (alias)
-      Pool: userPool,
-    };
-
+    const userData = { Username: identifier, Pool: userPool };
     const authDetails = new AuthenticationDetails({
       Username: identifier,
       Password: password,
@@ -42,18 +38,19 @@ const Login = () => {
 
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: (result) => {
-        console.log("Login success!", result);
-        // use client-side navigation
+        console.log("✅ Login success!", result);
         navigate("/dashboard");
       },
       onFailure: (err) => {
-        console.error("Login error:", err);
-        if (err.code === 'UserNotConfirmedException') {
-          setError(
-            "Please verify your email address first. Check your inbox for a verification link."
-          );
+        console.error("❌ Login error:", err);
+        if (err.code === "UserNotConfirmedException") {
+          setError("Please verify your email address first.");
+        } else if (err.code === "UserNotFoundException") {
+          setError("Account not found. Try signing up first or use Google login.");
+        } else if (err.code === "NotAuthorizedException") {
+          setError("Incorrect username or password.");
         } else {
-          setError(err.message || "Failed to login. Please try again.");
+          setError(err.message || "Login failed. Please try again.");
         }
       },
     });
@@ -73,18 +70,18 @@ const Login = () => {
       <div className="login-card">
         <h1>Lotus LMS</h1>
         <p>Sign in to continue</p>
-        
+
         <form onSubmit={handleEmailPasswordSignIn}>
-          <input 
-            type="text"  // Changed to text to accept both email and username
-            placeholder="Username or Email" 
+          <input
+            type="text"
+            placeholder="Username or Email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
+          <input
+            type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -95,15 +92,12 @@ const Login = () => {
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <div className="divider">OR</div>
-        
+
         <button className="google-btn" onClick={handleGoogleSignIn}>
-          <img
-            src="https://www.google.com/favicon.ico"
-            alt="Google"
-          />
+          <img src="https://www.google.com/favicon.ico" alt="Google" />
           Sign in with Google
         </button>
-        
+
         <p>
           Don't have an account? <Link to="/signup">Sign up</Link>
         </p>
