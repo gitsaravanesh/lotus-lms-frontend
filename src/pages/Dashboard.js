@@ -187,7 +187,7 @@ const Dashboard = () => {
             <div style={{ marginTop: 12 }}>
               <small>
                 The Razorpay checkout will open. Complete the payment to get
-                access to the course. Closing the modal will cancel the flow.
+                access to the course.
               </small>
             </div>
             <button
