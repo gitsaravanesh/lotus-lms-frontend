@@ -40,6 +40,28 @@ const Dashboard = () => {
     });
   };
 
+  // Helper function to record transaction
+  const recordTransaction = async (transactionData) => {
+    try {
+      const transactionResponse = await fetch(`${API_BASE_URL}/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-id": tenantId,
+        },
+        body: JSON.stringify(transactionData),
+      });
+
+      if (!transactionResponse.ok) {
+        console.error("Failed to update transaction:", await transactionResponse.text());
+      } else {
+        console.log("Transaction updated successfully");
+      }
+    } catch (err) {
+      console.error("Error updating transaction:", err);
+    }
+  };
+
   const createOrder = async (course) => {
     setPaymentLoading(true);
     setError("");
@@ -84,13 +106,25 @@ const Dashboard = () => {
       name: "Lotus LMS",
       description: course.title || "Course Purchase",
       order_id: order.id,
-      handler: function (response) {
-        // Successful payment. You should verify payment on backend.
+      handler: async function (response) {
+        // Successful payment. Update transaction in backend.
         console.log("razorpay success response", response);
+        
+        // Record successful transaction
+        await recordTransaction({
+          tenant_id: tenantId,
+          course_id: course.course_id,
+          payment_id: response.razorpay_payment_id,
+          order_id: response.razorpay_order_id,
+          signature: response.razorpay_signature,
+          amount: order.amount,
+          currency: order.currency,
+          status: "success",
+        });
+        
         alert("Payment successful — you are enrolled!");
         setSelectedCourse(null);
         setPaymentLoading(false);
-        // Optionally: call backend to verify signature and persist payment
       },
       prefill: {
         name: user?.name || user?.username || "",
@@ -104,20 +138,43 @@ const Dashboard = () => {
         color: "#4F46E5",
       },
       modal: {
-        ondismiss: function () {
+        ondismiss: async function () {
           setPaymentLoading(false);
+          
+          // Record cancelled transaction
+          await recordTransaction({
+            tenant_id: tenantId,
+            course_id: course.course_id,
+            order_id: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            status: "cancelled",
+          });
         },
       },
     };
 
     const rzp = new window.Razorpay(options);
 
-    rzp.on("payment.failed", function (response) {
+    rzp.on("payment.failed", async function (response) {
       console.error("Payment failed", response);
       setError(
         response?.error?.description || "Payment failed. Please try again."
       );
       setPaymentLoading(false);
+      
+      // Record failed transaction
+      await recordTransaction({
+        tenant_id: tenantId,
+        course_id: course.course_id,
+        payment_id: response.error.metadata?.payment_id,
+        order_id: response.error.metadata?.order_id,
+        amount: order.amount,
+        currency: order.currency,
+        status: "failed",
+        error_code: response.error.code,
+        error_description: response.error.description,
+      });
     });
 
     rzp.open();
