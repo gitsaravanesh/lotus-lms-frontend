@@ -45,6 +45,28 @@ const CourseDetail = () => {
     fetchCourse();
   }, [API_BASE_URL, courseId, tenantId]);
 
+  // Helper function to record transaction
+  const recordTransaction = async (transactionData) => {
+    try {
+      const transactionResponse = await fetch(`${API_BASE_URL}/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-id": tenantId,
+        },
+        body: JSON.stringify(transactionData),
+      });
+
+      if (!transactionResponse.ok) {
+        console.error("Failed to update transaction:", await transactionResponse.text());
+      } else {
+        console.log("Transaction updated successfully");
+      }
+    } catch (err) {
+      console.error("Error updating transaction:", err);
+    }
+  };
+
   const handlePayment = async () => {
     setPaymentLoading(true);
     setError("");
@@ -87,34 +109,17 @@ const CourseDetail = () => {
           // Payment successful
           console.log("Payment successful:", response);
           
-          // Call API to update lms-transactions table
-          try {
-            const transactionResponse = await fetch(`${API_BASE_URL}/transactions`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-tenant-id": tenantId,
-              },
-              body: JSON.stringify({
-                tenant_id: tenantId,
-                course_id: courseId,
-                payment_id: response.razorpay_payment_id,
-                order_id: response.razorpay_order_id,
-                signature: response.razorpay_signature,
-                amount: orderData.amount,
-                currency: orderData.currency,
-                status: "success",
-              }),
-            });
-
-            if (!transactionResponse.ok) {
-              console.error("Failed to update transaction:", await transactionResponse.text());
-            } else {
-              console.log("Transaction updated successfully");
-            }
-          } catch (err) {
-            console.error("Error updating transaction:", err);
-          }
+          // Record successful transaction
+          await recordTransaction({
+            tenant_id: tenantId,
+            course_id: courseId,
+            payment_id: response.razorpay_payment_id,
+            order_id: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            status: "success",
+          });
           
           alert(
             `Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${response.razorpay_order_id}`
@@ -134,19 +139,42 @@ const CourseDetail = () => {
           color: "#4F46E5",
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: async function () {
             setPaymentLoading(false);
             console.log("Payment cancelled by user");
+            
+            // Record cancelled transaction
+            await recordTransaction({
+              tenant_id: tenantId,
+              course_id: courseId,
+              order_id: orderData.id,
+              amount: orderData.amount,
+              currency: orderData.currency,
+              status: "cancelled",
+            });
           },
         },
       };
 
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on("payment.failed", function (response) {
+      razorpay.on("payment.failed", async function (response) {
         console.error("Payment failed:", response.error);
         setError(`Payment failed: ${response.error.description}`);
         setPaymentLoading(false);
+        
+        // Record failed transaction
+        await recordTransaction({
+          tenant_id: tenantId,
+          course_id: courseId,
+          payment_id: response.error.metadata?.payment_id,
+          order_id: response.error.metadata?.order_id,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          status: "failed",
+          error_code: response.error.code,
+          error_description: response.error.description,
+        });
       });
 
       razorpay.open();
