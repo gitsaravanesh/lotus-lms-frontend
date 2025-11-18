@@ -143,7 +143,10 @@ const Dashboard = () => {
       <div className="card">
         <h2>✅ Logged in successfully!</h2>
         <p>Welcome, {user?.name || "User"} 🎉</p>
-        <button onClick={logout}>Logout</button>
+        <div className="button-group">
+          <button className="my-courses-btn">My Courses</button>
+          <button onClick={logout}>Logout</button>
+        </div>
       </div>
 
       <div className="courses-section">
