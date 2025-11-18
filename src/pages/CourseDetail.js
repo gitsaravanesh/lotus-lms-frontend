@@ -83,17 +83,43 @@ const CourseDetail = () => {
         name: "Lotus LMS",
         description: course.title || "Course Purchase",
         order_id: orderData.id,
-        handler: function (response) {
+        handler: async function (response) {
           // Payment successful
           console.log("Payment successful:", response);
+          
+          // Call API to update lms-transactions table
+          try {
+            const transactionResponse = await fetch(`${API_BASE_URL}/transactions`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-tenant-id": tenantId,
+              },
+              body: JSON.stringify({
+                tenant_id: tenantId,
+                course_id: courseId,
+                payment_id: response.razorpay_payment_id,
+                order_id: response.razorpay_order_id,
+                signature: response.razorpay_signature,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                status: "success",
+              }),
+            });
+
+            if (!transactionResponse.ok) {
+              console.error("Failed to update transaction:", await transactionResponse.text());
+            } else {
+              console.log("Transaction updated successfully");
+            }
+          } catch (err) {
+            console.error("Error updating transaction:", err);
+          }
+          
           alert(
             `Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${response.razorpay_order_id}`
           );
           
-          // Here you can:
-          // 1. Verify payment on backend
-          // 2. Grant course access
-          // 3. Redirect to course content
           navigate("/dashboard");
         },
         prefill: {
