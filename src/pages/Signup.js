@@ -9,6 +9,15 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData);
 
+// Topic options for interest selection
+const TOPIC_OPTIONS = [
+  { value: "", label: "Select a topic" },
+  { value: "Cloud", label: "Cloud" },
+  { value: "AI", label: "AI" },
+  { value: "Full Stack", label: "Full Stack" },
+  { value: "Testing", label: "Testing" },
+];
+
 const Signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -113,7 +122,7 @@ const Signup = () => {
           // Google Username Prompt Modal
           <>
             <h1>Choose Username</h1>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
+            <p className="form-subtitle">
               Enter a username before continuing with Google
             </p>
             <input
@@ -125,14 +134,12 @@ const Signup = () => {
             />
             <label>Interested Topics (Optional)</label>
             <select value={googleTopic} onChange={(e) => setGoogleTopic(e.target.value)}>
-              <option value="">Select a topic</option>
-              <option value="Cloud">Cloud</option>
-              <option value="AI">AI</option>
-              <option value="Full Stack">Full Stack</option>
-              <option value="Testing">Testing</option>
+              {TOPIC_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
             
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <p className="error-text">{error}</p>}
             
             <button className="google-btn" onClick={proceedWithGoogleSignup}>
               <img
@@ -144,7 +151,7 @@ const Signup = () => {
             <button 
               type="button" 
               onClick={handleBackFromGooglePrompt}
-              style={{ marginTop: "10px", background: "#6c757d" }}
+              className="back-btn"
             >
               Back
             </button>
@@ -187,17 +194,15 @@ const Signup = () => {
               />
               <label>Interested Topics (Optional)</label>
               <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-                <option value="">Select a topic</option>
-                <option value="Cloud">Cloud</option>
-                <option value="AI">AI</option>
-                <option value="Full Stack">Full Stack</option>
-                <option value="Testing">Testing</option>
+                {TOPIC_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
               <button type="submit">Sign Up</button>
             </form>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {message && <p style={{ color: "green" }}>{message}</p>}
+            {error && <p className="error-text">{error}</p>}
+            {message && <p className="success-text">{message}</p>}
 
             <div className="divider">OR</div>
             
