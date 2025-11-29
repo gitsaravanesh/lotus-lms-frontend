@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
-import { sendTransaction } from "../api/transactions";
+import { updateTransaction } from "../api/transactions";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -85,40 +85,40 @@ const CourseDetail = () => {
         description: course.title || "Course Purchase",
         order_id: orderData.id,
         handler: async function (response) {
-          // Payment successful
           console.log("Payment successful:", response);
           
-          // Send transaction data to transactions API
+          // Update transaction using PUT API
           try {
             const transactionPayload = {
-              user_id: user?.username || tenantId,
-              user_email: user?.email || "",
-              course_id: courseId,
-              course_name: course?.title || "",
-              amount: orderData.amount,
-              currency: orderData.currency,
-              status: "SUCCESS",
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
+              status: "success",
+              course_id: courseId,
+              amount: orderData.amount,
+              currency: orderData.currency,
+              user_id: user?.username || tenantId,
+              email: user?.email || "",
               razorpay_signature: response.razorpay_signature,
-              timestamp: new Date().toISOString(),
             };
-            await sendTransaction(transactionPayload);
-            console.log("Transaction logged successfully");
+            
+            await updateTransaction(
+              response.razorpay_payment_id,
+              transactionPayload,
+              tenantId
+            );
+            
+            console.log("Transaction updated successfully");
+            alert(
+              `Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${response.razorpay_order_id}`
+            );
+            navigate("/dashboard");
           } catch (err) {
-            console.error("Failed to log transaction:", err);
-            // Don't block the user flow on transaction API failure
+            console.error("Failed to update transaction:", err);
+            alert("Payment successful, but failed to log transaction. You have been enrolled.");
+            navigate("/dashboard");
+          } finally {
+            setPaymentLoading(false);
           }
-          
-          alert(
-            `Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${response.razorpay_order_id}`
-          );
-          
-          // Here you can:
-          // 1. Verify payment on backend
-          // 2. Grant course access
-          // 3. Redirect to course content
-          navigate("/dashboard");
         },
         prefill: {
           name: user?.username || "",
@@ -132,10 +132,30 @@ const CourseDetail = () => {
           color: "#4F46E5",
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: async function() {
+            // User closed the payment modal - mark as failed
+            try {
+              const transactionPayload = {
+                razorpay_payment_id: "failed_" + Date.now(),
+                razorpay_order_id: orderData.id,
+                status: "failed",
+                course_id: courseId,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                user_id: user?.username || tenantId,
+              };
+              
+              await updateTransaction(
+                transactionPayload.razorpay_payment_id,
+                transactionPayload,
+                tenantId
+              );
+            } catch (err) {
+              console.error("Failed to log failed transaction:", err);
+            }
+            
             setPaymentLoading(false);
-            console.log("Payment cancelled by user");
-          },
+          }
         },
       };
 
@@ -147,19 +167,19 @@ const CourseDetail = () => {
         // Send failed transaction data to transactions API
         try {
           const transactionPayload = {
-            user_id: user?.username || tenantId,
-            user_email: user?.email || "",
+            razorpay_payment_id: response.error?.metadata?.payment_id || "failed_" + Date.now(),
+            razorpay_order_id: response.error?.metadata?.order_id || orderData.id,
+            status: "failed",
             course_id: courseId,
-            course_name: course?.title || "",
             amount: orderData.amount,
             currency: orderData.currency,
-            status: "FAILED",
-            razorpay_payment_id: response.error?.metadata?.payment_id || "",
-            razorpay_order_id: response.error?.metadata?.order_id || orderData.id,
-            razorpay_signature: "",
-            timestamp: new Date().toISOString(),
+            user_id: user?.username || tenantId,
           };
-          await sendTransaction(transactionPayload);
+          await updateTransaction(
+            transactionPayload.razorpay_payment_id,
+            transactionPayload,
+            tenantId
+          );
           console.log("Failed transaction logged");
         } catch (err) {
           console.error("Failed to log transaction:", err);
