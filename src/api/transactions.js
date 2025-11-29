@@ -1,15 +1,34 @@
 // src/api/transactions.js
-export async function sendTransaction(payload) {
-  const url = process.env.REACT_APP_TRANSACTIONS_API_URL || window.__TRANSACTIONS_API_URL__;
-  if (!url) {
-    console.warn('No transactions API URL configured');
+
+/**
+ * Update transaction status after payment completion
+ * @param {string} transactionId - The transaction ID (typically razorpay_payment_id)
+ * @param {object} payload - Transaction data
+ * @param {string} tenantId - Tenant ID for multi-tenancy
+ * @returns {Promise} - API response
+ */
+export async function updateTransaction(transactionId, payload, tenantId) {
+  const baseUrl = process.env.REACT_APP_API_BASE_URL;
+  if (!baseUrl) {
+    console.warn('No API base URL configured');
     return null;
   }
+  
+  const url = `${baseUrl}/transactions/${transactionId}`;
+  
   const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-Tenant-Id': tenantId
+    },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Transactions API returned ${res.status}`);
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Transaction API returned ${res.status}`);
+  }
+  
   return res.json();
 }
