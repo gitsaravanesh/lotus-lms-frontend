@@ -40,7 +40,31 @@ export const AuthProvider = ({ children }) => {
         .then((tokens) => {
           localStorage.setItem("id_token", tokens.id_token);
           const payload = parseJwt(tokens.id_token);
-          setUser({ name: payload.name || payload.email });
+          
+          // Retrieve pending username and topic from sessionStorage (set during Google signup)
+          const pendingUsername = sessionStorage.getItem("pending_google_username");
+          const pendingTopic = sessionStorage.getItem("pending_google_topic");
+          
+          // Store username in localStorage
+          if (pendingUsername) {
+            localStorage.setItem("username", pendingUsername);
+          }
+          
+          // Store topic in localStorage if provided
+          if (pendingTopic) {
+            localStorage.setItem("user_topic", pendingTopic);
+          }
+          
+          // Clear pending values from sessionStorage
+          sessionStorage.removeItem("pending_google_username");
+          sessionStorage.removeItem("pending_google_topic");
+          
+          // Set user state with username and email
+          setUser({ 
+            name: payload.name || payload.email,
+            username: pendingUsername || payload.email,
+            email: payload.email
+          });
           window.history.replaceState({}, document.title, "/dashboard");
         })
         .catch((err) => {
@@ -68,7 +92,12 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("id_token");
       if (token) {
         const payload = parseJwt(token);
-        setUser({ name: payload.name || payload.email });
+        const storedUsername = localStorage.getItem("username");
+        setUser({ 
+          name: payload.name || payload.email,
+          username: storedUsername || payload.email,
+          email: payload.email
+        });
       }
       setLoading(false);
     }
@@ -78,6 +107,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       localStorage.removeItem("id_token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("user_topic");
       setUser(null);
 
       // Hosted UI logout for Google/OAuth users

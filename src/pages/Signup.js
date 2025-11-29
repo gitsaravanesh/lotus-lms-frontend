@@ -17,6 +17,11 @@ const Signup = () => {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  
+  // Google signup flow state
+  const [showGoogleUsernamePrompt, setShowGoogleUsernamePrompt] = useState(false);
+  const [googleUsername, setGoogleUsername] = useState("");
+  const [googleTopic, setGoogleTopic] = useState("");
 
   const handleEmailSignup = (e) => {
     e.preventDefault();
@@ -64,8 +69,27 @@ const Signup = () => {
     });
   };
 
-  // Existing Google signup (works fine)
+  // Show username prompt before Google OAuth redirect
   const handleGoogleSignup = () => {
+    setShowGoogleUsernamePrompt(true);
+    setError("");
+  };
+
+  // Proceed with Google signup after username is entered
+  const proceedWithGoogleSignup = () => {
+    // Validate username (minimum 3 characters)
+    if (!googleUsername || googleUsername.trim().length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+
+    // Store username and topic in sessionStorage for retrieval after OAuth
+    sessionStorage.setItem("pending_google_username", googleUsername.trim());
+    if (googleTopic) {
+      sessionStorage.setItem("pending_google_topic", googleTopic);
+    }
+
+    // Redirect to Google OAuth
     const DOMAIN = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
     const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
     const CLIENT_ID = "49gusp4sidkggc371vghtdvujb";
@@ -74,69 +98,122 @@ const Signup = () => {
     window.location.href = url;
   };
 
+  // Go back to main signup form
+  const handleBackFromGooglePrompt = () => {
+    setShowGoogleUsernamePrompt(false);
+    setGoogleUsername("");
+    setGoogleTopic("");
+    setError("");
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Create Account</h1>
-        <form onSubmit={handleEmailSignup}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            minLength={3}
-          />
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password (min 8 characters)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={8}
-          />
-          <label>Interested Topics (Optional)</label>
-          <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-            <option value="">Select a topic</option>
-            <option value="Cloud">Cloud</option>
-            <option value="AI">AI</option>
-            <option value="Full Stack">Full Stack</option>
-            <option value="Testing">Testing</option>
-          </select>
-          <button type="submit">Sign Up</button>
-        </form>
+        {showGoogleUsernamePrompt ? (
+          // Google Username Prompt Modal
+          <>
+            <h1>Choose Username</h1>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
+              Enter a username before continuing with Google
+            </p>
+            <input
+              type="text"
+              placeholder="Username (min 3 characters)"
+              value={googleUsername}
+              onChange={(e) => setGoogleUsername(e.target.value)}
+              minLength={3}
+            />
+            <label>Interested Topics (Optional)</label>
+            <select value={googleTopic} onChange={(e) => setGoogleTopic(e.target.value)}>
+              <option value="">Select a topic</option>
+              <option value="Cloud">Cloud</option>
+              <option value="AI">AI</option>
+              <option value="Full Stack">Full Stack</option>
+              <option value="Testing">Testing</option>
+            </select>
+            
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            
+            <button className="google-btn" onClick={proceedWithGoogleSignup}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                alt="Google"
+              />
+              Continue with Google
+            </button>
+            <button 
+              type="button" 
+              onClick={handleBackFromGooglePrompt}
+              style={{ marginTop: "10px", background: "#6c757d" }}
+            >
+              Back
+            </button>
+          </>
+        ) : (
+          // Main Signup Form
+          <>
+            <h1>Create Account</h1>
+            <form onSubmit={handleEmailSignup}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                minLength={3}
+              />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password (min 8 characters)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+              <label>Interested Topics (Optional)</label>
+              <select value={topic} onChange={(e) => setTopic(e.target.value)}>
+                <option value="">Select a topic</option>
+                <option value="Cloud">Cloud</option>
+                <option value="AI">AI</option>
+                <option value="Full Stack">Full Stack</option>
+                <option value="Testing">Testing</option>
+              </select>
+              <button type="submit">Sign Up</button>
+            </form>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {message && <p style={{ color: "green" }}>{message}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            {message && <p style={{ color: "green" }}>{message}</p>}
 
-        <div className="divider">OR</div>
-        
-        <button className="google-btn" onClick={handleGoogleSignup}>
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-            alt="Google"
-          />
-          Sign up with Google
-        </button>
-        
-        <p>
-          Already have an account? <Link to="/">Sign in</Link>
-        </p>
+            <div className="divider">OR</div>
+            
+            <button className="google-btn" onClick={handleGoogleSignup}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                alt="Google"
+              />
+              Sign up with Google
+            </button>
+            
+            <p>
+              Already have an account? <Link to="/">Sign in</Link>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
