@@ -380,3 +380,23 @@ button:disabled {
 .enroll-button:active:not(:disabled) {
   transform: scale(0.98);
 }
+
+/* Form helper text and states */
+.form-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.success-text {
+  color: green;
+}
+
+.back-btn {
+  margin-top: 10px;
+  background: #6c757d;
+}
+
+.back-btn:hover {
+  background: #545b62;
+}
