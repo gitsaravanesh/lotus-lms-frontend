@@ -44,9 +44,21 @@ const Login = () => {
         const idToken = result.getIdToken().getJwtToken();
         localStorage.setItem("id_token", idToken);
         
-        // ✅ Update the user state in AuthProvider
+        // ✅ Parse the token payload
         const payload = JSON.parse(atob(idToken.split(".")[1]));
-        setUser({ name: payload.name || payload.email || identifier });
+        
+        // ✅ Determine canonical username with priority: cognito:username → preferred_username → email → identifier
+        let username = payload["cognito:username"] || payload.preferred_username || payload.email || identifier;
+        
+        // ✅ Persist username to localStorage
+        localStorage.setItem("username", username);
+        
+        // ✅ Update the user state in AuthProvider with name, username, and email
+        setUser({ 
+          name: payload.name || payload.email || identifier,
+          username: username,
+          email: payload.email
+        });
         
         // Navigation will happen automatically via useEffect
       },

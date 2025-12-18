@@ -4,6 +4,44 @@ import { exchangeCodeForToken, parseJwt } from "./authService";
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
+/**
+ * Helper function to determine and persist canonical username
+ * Priority: localStorage → pendingUsername → cognito:username → preferred_username → email
+ */
+const determineAndPersistUsername = (payload, pendingUsername = null) => {
+  // 1. Check if username already exists in localStorage
+  const existingUsername = localStorage.getItem("username");
+  if (existingUsername) {
+    return existingUsername;
+  }
+
+  // 2. Use pending username from signup flow
+  if (pendingUsername) {
+    localStorage.setItem("username", pendingUsername);
+    return pendingUsername;
+  }
+
+  // 3. Try cognito:username claim
+  if (payload["cognito:username"]) {
+    localStorage.setItem("username", payload["cognito:username"]);
+    return payload["cognito:username"];
+  }
+
+  // 4. Try preferred_username claim
+  if (payload.preferred_username) {
+    localStorage.setItem("username", payload.preferred_username);
+    return payload.preferred_username;
+  }
+
+  // 5. Fallback to email
+  if (payload.email) {
+    localStorage.setItem("username", payload.email);
+    return payload.email;
+  }
+
+  return null;
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -45,11 +83,6 @@ export const AuthProvider = ({ children }) => {
           const pendingUsername = sessionStorage.getItem("pending_google_username");
           const pendingTopic = sessionStorage.getItem("pending_google_topic");
           
-          // Store username in localStorage
-          if (pendingUsername) {
-            localStorage.setItem("username", pendingUsername);
-          }
-          
           // Store topic in localStorage if provided
           if (pendingTopic) {
             localStorage.setItem("user_topic", pendingTopic);
@@ -59,10 +92,13 @@ export const AuthProvider = ({ children }) => {
           sessionStorage.removeItem("pending_google_username");
           sessionStorage.removeItem("pending_google_topic");
           
+          // Determine and persist canonical username
+          const username = determineAndPersistUsername(payload, pendingUsername);
+          
           // Set user state with username and email
           setUser({ 
             name: payload.name || payload.email,
-            username: pendingUsername || payload.email,
+            username: username,
             email: payload.email
           });
           window.history.replaceState({}, document.title, "/dashboard");
@@ -92,10 +128,11 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("id_token");
       if (token) {
         const payload = parseJwt(token);
-        const storedUsername = localStorage.getItem("username");
+        // Determine and persist canonical username using helper
+        const username = determineAndPersistUsername(payload, null);
         setUser({ 
           name: payload.name || payload.email,
-          username: storedUsername || payload.email,
+          username: username,
           email: payload.email
         });
       }
