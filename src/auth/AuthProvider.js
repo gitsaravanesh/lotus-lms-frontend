@@ -7,9 +7,18 @@ export const useAuth = () => useContext(AuthContext);
 /**
  * Helper function to determine and persist canonical username
  * Priority: localStorage → pendingUsername → cognito:username → preferred_username → email
+ * 
+ * Note: localStorage username takes priority to maintain consistency across sessions.
+ * This ensures the tenant_id remains stable for API calls even if token claims change.
  */
-const determineAndPersistUsername = (payload, pendingUsername = null) => {
+export const determineAndPersistUsername = (payload, pendingUsername = null) => {
+  // Guard clause: ensure payload exists
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
   // 1. Check if username already exists in localStorage
+  // This maintains consistency for returning users
   const existingUsername = localStorage.getItem("username");
   if (existingUsername) {
     return existingUsername;

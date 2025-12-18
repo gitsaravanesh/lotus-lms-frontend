@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
+import { determineAndPersistUsername } from "../auth/AuthProvider";
 import { CognitoUser, AuthenticationDetails, CognitoUserPool } from "amazon-cognito-identity-js";
 
 const poolData = {
@@ -47,11 +48,8 @@ const Login = () => {
         // ✅ Parse the token payload
         const payload = JSON.parse(atob(idToken.split(".")[1]));
         
-        // ✅ Determine canonical username with priority: cognito:username → preferred_username → email → identifier
-        let username = payload["cognito:username"] || payload.preferred_username || payload.email || identifier;
-        
-        // ✅ Persist username to localStorage
-        localStorage.setItem("username", username);
+        // ✅ Determine and persist canonical username using shared helper
+        const username = determineAndPersistUsername(payload, null);
         
         // ✅ Update the user state in AuthProvider with name, username, and email
         setUser({ 
