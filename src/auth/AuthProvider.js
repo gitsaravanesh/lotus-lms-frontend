@@ -10,15 +10,21 @@ export const useAuth = () => useContext(AuthContext);
  * 
  * Note: localStorage username takes priority to maintain consistency across sessions.
  * This ensures the tenant_id remains stable for API calls even if token claims change.
+ * 
+ * @param {Object} payload - The parsed JWT token payload
+ * @param {string|null} pendingUsername - Optional username from signup flow
+ * @returns {string|null} The canonical username, or null if none can be determined
  */
 export const determineAndPersistUsername = (payload, pendingUsername = null) => {
   // Guard clause: ensure payload exists
+  // Returns null without persisting when payload is invalid
   if (!payload || typeof payload !== 'object') {
     return null;
   }
 
   // 1. Check if username already exists in localStorage
-  // This maintains consistency for returning users
+  // This maintains consistency for returning users and ensures stable tenant_id
+  // We trust localStorage since it was set by this same function in a previous session
   const existingUsername = localStorage.getItem("username");
   if (existingUsername) {
     return existingUsername;
