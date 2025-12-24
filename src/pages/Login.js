@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
+import { determineAndPersistUsername } from "../auth/AuthProvider";
 import { CognitoUser, AuthenticationDetails, CognitoUserPool } from "amazon-cognito-identity-js";
 
 const poolData = {
@@ -44,9 +45,18 @@ const Login = () => {
         const idToken = result.getIdToken().getJwtToken();
         localStorage.setItem("id_token", idToken);
         
-        // ✅ Update the user state in AuthProvider
+        // ✅ Parse the token payload
         const payload = JSON.parse(atob(idToken.split(".")[1]));
-        setUser({ name: payload.name || payload.email || identifier });
+        
+        // ✅ Determine and persist canonical username using shared helper
+        const username = determineAndPersistUsername(payload, null);
+        
+        // ✅ Update the user state in AuthProvider with name, username, and email
+        setUser({ 
+          name: payload.name || payload.email || identifier,
+          username: username,
+          email: payload.email
+        });
         
         // Navigation will happen automatically via useEffect
       },
