@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
-import { determineAndPersistUsername } from "../auth/AuthProvider";
+import { determineAndPersistUsername, fetchUserTenant } from "../auth/AuthProvider";
 import { CognitoUser, AuthenticationDetails, CognitoUserPool } from "amazon-cognito-identity-js";
 
 const poolData = {
@@ -38,7 +38,7 @@ const Login = () => {
     const cognitoUser = new CognitoUser(userData);
 
     cognitoUser.authenticateUser(authDetails, {
-      onSuccess: (result) => {
+      onSuccess: async (result) => {
         console.log("✅ Login success!", result);
         
         // ✅ Store the ID token in localStorage
@@ -51,11 +51,21 @@ const Login = () => {
         // ✅ Determine and persist canonical username using shared helper
         const username = determineAndPersistUsername(payload, null);
         
-        // ✅ Update the user state in AuthProvider with name, username, and email
+        // ✅ Fetch tenant mapping
+        const tenantMapping = await fetchUserTenant(username);
+        
+        if (!tenantMapping) {
+          setError("Your account is not assigned to any organization. Please contact support at support@lotuslms.com");
+          return;
+        }
+        
+        // ✅ Update the user state in AuthProvider with name, username, email, tenant_id, and role
         setUser({ 
           name: payload.name || payload.email || identifier,
           username: username,
-          email: payload.email
+          email: payload.email,
+          tenant_id: tenantMapping.tenant_id,
+          role: tenantMapping.role
         });
         
         // Navigation will happen automatically via useEffect

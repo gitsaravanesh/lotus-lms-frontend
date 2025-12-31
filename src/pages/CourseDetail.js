@@ -14,10 +14,16 @@ const CourseDetail = () => {
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const RAZORPAY_KEY_ID = process.env.REACT_APP_RAZORPAY_KEY_ID;
-  const tenantId = user?.username || "trainer1";
+  const tenantId = user?.tenant_id;
 
   useEffect(() => {
     const fetchCourse = async () => {
+      if (!tenantId) {
+        setError("No tenant assigned to your account.");
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(
           `${API_BASE_URL}/courses/${encodeURIComponent(courseId)}`,
