@@ -185,26 +185,30 @@ export const AuthProvider = ({ children }) => {
         const username = determineAndPersistUsername(payload, null);
         
         // Fetch tenant mapping from backend
-        fetchUserTenant(username).then((tenantMapping) => {
-          if (!tenantMapping) {
-            setErrorMessage("Your account is not assigned to any organization. Please contact support.");
+        (async () => {
+          try {
+            const tenantMapping = await fetchUserTenant(username);
+            
+            if (!tenantMapping) {
+              setErrorMessage("Your account is not assigned to any organization. Please contact support.");
+              setLoading(false);
+              return;
+            }
+            
+            setUser({ 
+              name: payload.name || payload.email,
+              username: username,
+              email: payload.email,
+              tenant_id: tenantMapping.tenant_id,
+              role: tenantMapping.role
+            });
             setLoading(false);
-            return;
+          } catch (err) {
+            console.error("Failed to fetch tenant mapping:", err);
+            setErrorMessage("Failed to load account information. Please try logging in again.");
+            setLoading(false);
           }
-          
-          setUser({ 
-            name: payload.name || payload.email,
-            username: username,
-            email: payload.email,
-            tenant_id: tenantMapping.tenant_id,
-            role: tenantMapping.role
-          });
-          setLoading(false);
-        }).catch((err) => {
-          console.error("Failed to fetch tenant mapping:", err);
-          setErrorMessage("Failed to load account information. Please try logging in again.");
-          setLoading(false);
-        });
+        })();
       } else {
         setLoading(false);
       }
