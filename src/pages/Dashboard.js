@@ -12,10 +12,19 @@ const Dashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const tenantId = user?.username || "trainer1";
+  const tenantId = user?.tenant_id;
 
   // Fetch courses
   useEffect(() => {
+    // Debug logging
+    console.log("User tenant_id:", tenantId);
+    console.log("User object:", user);
+    
+    if (!tenantId) {
+      setError("No tenant assigned to your account. Please contact support.");
+      return;
+    }
+
     fetch(`${API_BASE_URL}/courses`, {
       headers: { "x-tenant-id": tenantId },
     })
@@ -24,7 +33,7 @@ const Dashboard = () => {
       .catch(() =>
         setError("Unable to load courses. Please try again later.")
       );
-  }, [tenantId]);
+  }, [tenantId, user]);
 
   // Load Razorpay checkout script if not already loaded
   const loadRazorpayScript = () => {

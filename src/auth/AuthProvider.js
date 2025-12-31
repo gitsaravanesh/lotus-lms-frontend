@@ -4,6 +4,33 @@ import { exchangeCodeForToken, parseJwt } from "./authService";
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+/**
+ * Fetch user tenant mapping from backend API
+ * @param {string} userId - The user ID to fetch tenant mapping for
+ * @returns {Promise<Object|null>} The tenant mapping object or null if failed
+ */
+export const fetchUserTenant = async (userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/user/tenant?user_id=${userId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch tenant mapping");
+    }
+    
+    const data = await response.json();
+    return data; // { user_id, tenant_id, role, email, created_at }
+  } catch (error) {
+    console.error("Error fetching tenant mapping:", error);
+    return null;
+  }
+};
+
 /**
  * Helper function to determine and persist canonical username
  * Priority: localStorage → pendingUsername → cognito:username → preferred_username → email
@@ -90,7 +117,7 @@ export const AuthProvider = ({ children }) => {
     const code = params.get("code");
     if (code) {
       exchangeCodeForToken(code)
-        .then((tokens) => {
+        .then(async (tokens) => {
           localStorage.setItem("id_token", tokens.id_token);
           const payload = parseJwt(tokens.id_token);
           
@@ -110,11 +137,22 @@ export const AuthProvider = ({ children }) => {
           // Determine and persist canonical username
           const username = determineAndPersistUsername(payload, pendingUsername);
           
-          // Set user state with username and email
+          // Fetch tenant mapping from backend
+          const tenantMapping = await fetchUserTenant(username);
+          
+          if (!tenantMapping) {
+            setErrorMessage("Your account is not assigned to any organization. Please contact support.");
+            setLoading(false);
+            return;
+          }
+          
+          // Set user state with username, email, tenant_id, and role
           setUser({ 
             name: payload.name || payload.email,
             username: username,
-            email: payload.email
+            email: payload.email,
+            tenant_id: tenantMapping.tenant_id,
+            role: tenantMapping.role
           });
           window.history.replaceState({}, document.title, "/dashboard");
         })
@@ -145,13 +183,31 @@ export const AuthProvider = ({ children }) => {
         const payload = parseJwt(token);
         // Determine and persist canonical username using helper
         const username = determineAndPersistUsername(payload, null);
-        setUser({ 
-          name: payload.name || payload.email,
-          username: username,
-          email: payload.email
+        
+        // Fetch tenant mapping from backend
+        fetchUserTenant(username).then((tenantMapping) => {
+          if (!tenantMapping) {
+            setErrorMessage("Your account is not assigned to any organization. Please contact support.");
+            setLoading(false);
+            return;
+          }
+          
+          setUser({ 
+            name: payload.name || payload.email,
+            username: username,
+            email: payload.email,
+            tenant_id: tenantMapping.tenant_id,
+            role: tenantMapping.role
+          });
+          setLoading(false);
+        }).catch((err) => {
+          console.error("Failed to fetch tenant mapping:", err);
+          setErrorMessage("Failed to load account information. Please try logging in again.");
+          setLoading(false);
         });
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     }
   }, []);
 
