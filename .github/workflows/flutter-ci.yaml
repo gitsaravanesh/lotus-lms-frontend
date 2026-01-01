@@ -56,7 +56,7 @@ jobs:
 
       # Upload Web Build Artifact
       - name: Upload Web Build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: build/web/
@@ -78,7 +78,7 @@ jobs:
     steps:
       # Download Web Build Artifact
       - name: Download Web Build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: web-build
           path: build/web
