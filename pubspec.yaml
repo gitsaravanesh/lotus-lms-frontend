@@ -39,7 +39,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0
-  google_fonts: ^6.1.0
+  google_fonts: ^4.0.5  # Downgraded for Flutter 3.16.0 compatibility
   
   # Utilities
   freezed_annotation: ^2.4.1
