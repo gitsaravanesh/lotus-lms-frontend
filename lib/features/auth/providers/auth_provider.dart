@@ -84,9 +84,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState.error(_parseErrorMessage(e.toString()));
       // Reset to unauthenticated after showing error
       Future.delayed(const Duration(seconds: 3), () {
-        if (state is _Error) {
-          state = const AuthState.unauthenticated();
-        }
+        state.maybeWhen(
+          error: (_) => state = const AuthState.unauthenticated(),
+          orElse: () {},
+        );
       });
     }
   }
