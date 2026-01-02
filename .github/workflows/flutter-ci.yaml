@@ -29,7 +29,12 @@ jobs:
 
       # Get Flutter Dependencies
       - name: Install Dependencies
-        run: flutter pub get
+        run: |
+          echo "🔄 Clearing dependency cache..."
+          flutter pub cache clean --force || true
+          echo "📦 Installing dependencies..."
+          flutter pub get
+          echo "✅ Dependencies installed successfully"
 
       # Verify Flutter Installation
       - name: Verify Flutter
@@ -129,7 +134,12 @@ jobs:
           java-version: '11'
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: |
+          echo "🔄 Clearing dependency cache..."
+          flutter pub cache clean --force || true
+          echo "📦 Installing dependencies..."
+          flutter pub get
+          echo "✅ Dependencies installed successfully"
 
       - name: Generate Code
         run: flutter pub run build_runner build --delete-conflicting-outputs
