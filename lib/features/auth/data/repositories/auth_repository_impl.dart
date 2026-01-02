@@ -48,6 +48,9 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     
     final idToken = session.getIdToken().getJwtToken();
+    if (idToken == null) {
+      throw Exception('Failed to get authentication token');
+    }
     
     // Store token
     final prefs = await SharedPreferences.getInstance();
