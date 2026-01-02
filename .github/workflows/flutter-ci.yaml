@@ -43,9 +43,17 @@ jobs:
       - name: Analyze Code
         run: flutter analyze
 
-      # Run Tests
+      # Run Tests (optional - skip if no tests exist)
       - name: Run Tests
-        run: flutter test
+        run: |
+          if [ -d "test" ] && [ "$(find test -name '*_test.dart' 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "📝 Running Flutter tests..."
+            flutter test
+          else
+            echo "⚠️  No test files found - skipping tests"
+            echo "💡 To add tests: create test/ directory with *_test.dart files"
+            echo "✅ Continuing build without tests"
+          fi
 
       # Build Web Version
       - name: Build Web
