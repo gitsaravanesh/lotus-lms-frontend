@@ -14,7 +14,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        builder: (context, state) {
+          // Check if this is an OAuth callback
+          final code = state.uri.queryParameters['code'];
+          final error = state.uri.queryParameters['error'];
+          
+          if (code != null || error != null) {
+            // This is an OAuth callback
+            final errorDescription = state.uri.queryParameters['error_description'];
+            return AuthCallbackPage(
+              code: code,
+              error: error,
+              errorDescription: errorDescription,
+            );
+          }
+          
+          // Regular login page
+          return const LoginPage();
+        },
       ),
       GoRoute(
         path: '/signup',
@@ -25,20 +42,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/dashboard',
         name: 'dashboard',
         builder: (context, state) => const DashboardPage(),
-      ),
-      GoRoute(
-        path: '/auth/callback',
-        name: 'auth-callback',
-        builder: (context, state) {
-          final code = state.uri.queryParameters['code'];
-          final error = state.uri.queryParameters['error'];
-          final errorDescription = state.uri.queryParameters['error_description'];
-          return AuthCallbackPage(
-            code: code,
-            error: error,
-            errorDescription: errorDescription,
-          );
-        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

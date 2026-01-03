@@ -75,13 +75,13 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         final oauthUrl = ref.read(authProvider.notifier).getGoogleOAuthUrl();
         final uri = Uri.parse(oauthUrl);
         
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.platformDefault);
-        } else {
-          setState(() {
-            _errorMessage = 'Could not launch Google Sign-Up';
-          });
-        }
+        // For web, use _self to navigate in the same window
+        // For mobile, use platformDefault
+        await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+          webOnlyWindowName: '_self',
+        );
       } catch (e) {
         setState(() {
           _errorMessage = 'Failed to initiate Google Sign-Up: $e';
