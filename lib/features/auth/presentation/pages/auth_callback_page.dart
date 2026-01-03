@@ -27,6 +27,7 @@ class AuthCallbackPage extends ConsumerStatefulWidget {
 }
 
 class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
+  static const _errorDisplayDuration = Duration(seconds: 3);
   String? _errorMessage;
 
   @override
@@ -56,7 +57,7 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
       });
 
       // Navigate back to login after showing error
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(_errorDisplayDuration);
       if (mounted) {
         context.go('/');
       }
@@ -93,7 +94,7 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
         });
 
         // Navigate back to login after showing error
-        await Future.delayed(const Duration(seconds: 3));
+        await Future.delayed(_errorDisplayDuration);
         if (mounted) {
           context.go('/');
         }
