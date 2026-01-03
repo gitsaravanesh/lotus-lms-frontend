@@ -47,7 +47,7 @@ void main() {
       const hasPermission = true;
       
       // Act
-      final canAccess = isLoggedIn && hasPermission;
+      const canAccess = isLoggedIn && hasPermission;
       
       // Assert
       expect(canAccess, true);
