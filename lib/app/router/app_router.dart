@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
+import '../../features/auth/presentation/pages/auth_callback_page.dart';
 import '../../features/courses/presentation/pages/dashboard_page.dart';
 
 /// Router Provider
@@ -24,6 +25,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/dashboard',
         name: 'dashboard',
         builder: (context, state) => const DashboardPage(),
+      ),
+      GoRoute(
+        path: '/auth/callback',
+        name: 'auth-callback',
+        builder: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          final error = state.uri.queryParameters['error'];
+          final errorDescription = state.uri.queryParameters['error_description'];
+          return AuthCallbackPage(
+            code: code,
+            error: error,
+            errorDescription: errorDescription,
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
