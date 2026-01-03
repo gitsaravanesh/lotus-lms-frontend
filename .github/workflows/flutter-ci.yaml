@@ -35,7 +35,6 @@ jobs:
           echo "📦 Installing dependencies..."
           flutter pub get
           echo "✅ Dependencies installed successfully"
-          mkdir test
 
       # Verify Flutter Installation
       - name: Verify Flutter
