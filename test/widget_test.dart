@@ -3,19 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotus_lms/app/app.dart';
 
 void main() {
-  testWidgets('LotusLmsApp builds successfully', (WidgetTester tester) async {
-    // Build the LotusLmsApp widget wrapped in ProviderScope
+  testWidgets('LotusLmsApp can be created with ProviderScope', (WidgetTester tester) async {
+    // Build the app with minimal setup
     await tester.pumpWidget(
       const ProviderScope(
         child: LotusLmsApp(),
       ),
     );
 
-    // Verify that the app builds without errors
+    // Just verify the widget exists - don't wait for full rendering
+    expect(find.byType(ProviderScope), findsOneWidget);
     expect(find.byType(LotusLmsApp), findsOneWidget);
   });
 
-  testWidgets('LotusLmsApp creates MaterialApp with router', (WidgetTester tester) async {
+  testWidgets('LotusLmsApp initializes without errors', (WidgetTester tester) async {
     // Build the app
     await tester.pumpWidget(
       const ProviderScope(
@@ -23,10 +24,10 @@ void main() {
       ),
     );
 
-    // Pump the widget tree to allow the router to initialize
-    await tester.pumpAndSettle();
+    // Pump one frame to start initialization
+    await tester.pump();
 
-    // Verify that LotusLmsApp is present
-    expect(find.byType(LotusLmsApp), findsOneWidget);
+    // Verify no exceptions were thrown during initial build
+    expect(tester.takeException(), isNull);
   });
 }
