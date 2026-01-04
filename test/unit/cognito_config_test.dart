@@ -55,8 +55,8 @@ REACT_APP_SIGNOUT_URL=https://react.test/logout
       dotenv.testLoad(fileInput: '');
 
       // Act & Assert
-      expect(CognitoConfig.userPoolId, 'ap-south-1_tlq8pMnBG');
-      expect(CognitoConfig.clientId, '1gd98lgt6jqtletgio0e2us33n');
+      expect(CognitoConfig.userPoolId, 'ap-south-1_6C5lP9yfm');
+      expect(CognitoConfig.clientId, '49gusp4sidkggc371vghtdvujb');
       expect(CognitoConfig.region, 'ap-south-1');
       expect(CognitoConfig.cognitoDomain, 'lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com');
       expect(CognitoConfig.redirectUri, 'https://dodyqytcfhwoe.cloudfront.net/');

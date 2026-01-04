@@ -6,12 +6,12 @@ class CognitoConfig {
   static String get userPoolId => 
     dotenv.env['USER_POOL_ID'] ?? 
     dotenv.env['REACT_APP_USER_POOL_ID'] ?? 
-    'ap-south-1_tlq8pMnBG';
+    'ap-south-1_6C5lP9yfm';  // Updated to original user pool
     
   static String get clientId => 
     dotenv.env['CLIENT_ID'] ?? 
     dotenv.env['REACT_APP_CLIENT_ID'] ?? 
-    '1gd98lgt6jqtletgio0e2us33n';
+    '49gusp4sidkggc371vghtdvujb';  // Updated to original client ID
     
   static String get region => 
     dotenv.env['AWS_REGION'] ?? 
