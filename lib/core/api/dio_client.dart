@@ -9,7 +9,9 @@ class DioClient {
   
   static Dio get instance {
     if (_instance == null) {
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.example.com';
+      final baseUrl = dotenv.env['API_BASE_URL'] ?? 
+                      dotenv.env['REACT_APP_API_BASE_URL'] ?? 
+                      'https://api.example.com';
       
       _instance = Dio(
         BaseOptions(
