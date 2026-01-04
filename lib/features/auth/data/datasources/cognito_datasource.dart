@@ -72,19 +72,29 @@ class CognitoDataSource {
   
   /// Get Hosted UI login URL for Google OAuth
   String getHostedUIUrl() {
+    // Don't URL-encode the scope value since it uses + as separator
+    final scopeParam = CognitoConfig.scopes.join('+');
+    
     final params = {
-      'client_id': CognitoConfig.clientId,
+      'client_id': Uri.encodeComponent(CognitoConfig.clientId),
       'response_type': 'code',
-      'scope': CognitoConfig.scopes.join('+'),
-      'redirect_uri': CognitoConfig.redirectUri,
+      'scope': scopeParam,  // Don't encode - use + separator as-is
+      'redirect_uri': Uri.encodeComponent(CognitoConfig.redirectUri),
       'identity_provider': CognitoConfig.googleProvider,
     };
     
     final queryString = params.entries
-        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+        .map((e) => '${e.key}=${e.value}')
         .join('&');
     
-    return 'https://${CognitoConfig.cognitoDomain}/oauth2/authorize?$queryString';
+    final url = 'https://${CognitoConfig.cognitoDomain}/oauth2/authorize?$queryString';
+    
+    // Debug logging
+    print('🔐 OAuth URL: $url');
+    print('📋 Scopes: ${CognitoConfig.scopes}');
+    print('🔗 Redirect URI: ${CognitoConfig.redirectUri}');
+    
+    return url;
   }
   
   /// Get logout URL
