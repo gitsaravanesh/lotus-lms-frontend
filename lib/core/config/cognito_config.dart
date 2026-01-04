@@ -18,10 +18,14 @@ class CognitoConfig {
     dotenv.env['REACT_APP_REGION'] ?? 
     'ap-south-1';
     
-  static String get cognitoDomain => 
-    dotenv.env['COGNITO_DOMAIN'] ?? 
-    dotenv.env['REACT_APP_COGNITO_DOMAIN'] ?? 
-    'lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com';
+  static String get cognitoDomain {
+    var domain = dotenv.env['COGNITO_DOMAIN'] ?? 
+                 dotenv.env['REACT_APP_COGNITO_DOMAIN'] ?? 
+                 'lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com';
+    
+    // Remove https:// or http:// prefix if present (React format includes it, Flutter doesn't need it)
+    return domain.replaceFirst(RegExp(r'^https?://'), '');
+  }
     
   static String get redirectUri => 
     dotenv.env['REDIRECT_URI'] ?? 

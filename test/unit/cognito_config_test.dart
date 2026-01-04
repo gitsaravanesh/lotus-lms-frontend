@@ -35,7 +35,7 @@ SIGNOUT_URL=https://flutter.test/logout
 REACT_APP_USER_POOL_ID=ap-south-1_react_test
 REACT_APP_CLIENT_ID=react_client_test
 REACT_APP_REGION=eu-west-1
-REACT_APP_COGNITO_DOMAIN=react.auth.eu-west-1.amazoncognito.com
+REACT_APP_COGNITO_DOMAIN=https://react.auth.eu-west-1.amazoncognito.com
 REACT_APP_REDIRECT_URL=https://react.test/
 REACT_APP_SIGNOUT_URL=https://react.test/logout
 ''');
@@ -44,6 +44,7 @@ REACT_APP_SIGNOUT_URL=https://react.test/logout
       expect(CognitoConfig.userPoolId, 'ap-south-1_react_test');
       expect(CognitoConfig.clientId, 'react_client_test');
       expect(CognitoConfig.region, 'eu-west-1');
+      // React domain has https:// prefix which should be stripped
       expect(CognitoConfig.cognitoDomain, 'react.auth.eu-west-1.amazoncognito.com');
       expect(CognitoConfig.redirectUri, 'https://react.test/');
       expect(CognitoConfig.signoutUri, 'https://react.test/logout');
@@ -82,6 +83,26 @@ REACT_APP_CLIENT_ID=react_client
 
     test('should have correct Google provider', () {
       expect(CognitoConfig.googleProvider, 'Google');
+    });
+
+    test('should strip https:// protocol from cognitoDomain', () {
+      // Arrange
+      dotenv.testLoad(fileInput: '''
+COGNITO_DOMAIN=https://test.domain.com
+''');
+
+      // Act & Assert
+      expect(CognitoConfig.cognitoDomain, 'test.domain.com');
+    });
+
+    test('should strip http:// protocol from cognitoDomain', () {
+      // Arrange
+      dotenv.testLoad(fileInput: '''
+COGNITO_DOMAIN=http://test.domain.com
+''');
+
+      // Act & Assert
+      expect(CognitoConfig.cognitoDomain, 'test.domain.com');
     });
   });
 }
