@@ -100,5 +100,23 @@ REDIRECT_URI=https://dodyqytcfhwoe.cloudfront.net/
       expect(url, contains('client_id=49gusp4sidkggc371vghtdvujb'));
       expect(url, contains('logout_uri=https%3A%2F%2Fdodyqytcfhwoe.cloudfront.net%2F'));
     });
+
+    test('getLogoutUrl should properly encode client_id with special characters', () {
+      // Arrange
+      dotenv.testLoad(fileInput: '''
+USER_POOL_ID=ap-south-1_6C5lP9yfm
+CLIENT_ID=test+client&id=123
+AWS_REGION=ap-south-1
+COGNITO_DOMAIN=lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com
+SIGNOUT_URL=https://dodyqytcfhwoe.cloudfront.net/
+''');
+      final testDataSource = CognitoDataSource();
+
+      // Act
+      final url = testDataSource.getLogoutUrl();
+
+      // Assert - special characters in client_id should be encoded
+      expect(url, contains('client_id=test%2Bclient%26id%3D123'));
+    });
   });
 }

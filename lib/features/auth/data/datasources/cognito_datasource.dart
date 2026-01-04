@@ -1,9 +1,11 @@
 import 'package:amazon_cognito_identity_dart_2/cognito.dart';
+import 'package:logger/logger.dart';
 import '../../../../core/config/cognito_config.dart';
 
 /// Cognito Data Source for authentication
 class CognitoDataSource {
   late final CognitoUserPool _userPool;
+  final Logger _logger = Logger();
   
   CognitoDataSource() {
     _userPool = CognitoUserPool(
@@ -90,9 +92,9 @@ class CognitoDataSource {
     final url = 'https://${CognitoConfig.cognitoDomain}/oauth2/authorize?$queryString';
     
     // Debug logging
-    print('🔐 OAuth URL: $url');
-    print('📋 Scopes: ${CognitoConfig.scopes}');
-    print('🔗 Redirect URI: ${CognitoConfig.redirectUri}');
+    _logger.d('OAuth URL generated: $url');
+    _logger.d('Scopes: ${CognitoConfig.scopes}');
+    _logger.d('Redirect URI: ${CognitoConfig.redirectUri}');
     
     return url;
   }
@@ -100,7 +102,7 @@ class CognitoDataSource {
   /// Get logout URL
   String getLogoutUrl() {
     final params = {
-      'client_id': CognitoConfig.clientId,
+      'client_id': Uri.encodeComponent(CognitoConfig.clientId),
       'logout_uri': Uri.encodeComponent(CognitoConfig.signoutUri),
     };
     
