@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:amazon_cognito_identity_dart_2/cognito.dart';
 import 'package:lotus_lms/features/auth/data/datasources/cognito_datasource.dart';
-import 'package:lotus_lms/core/config/cognito_config.dart';
 
 void main() {
   group('CognitoDataSource Tests', () {
@@ -80,8 +79,8 @@ void main() {
 
     test('should validate Google provider name', () {
       // Arrange
-      final expectedProvider = 'Google';
-      final googleProviderName = 'Google';
+      const expectedProvider = 'Google';
+      const googleProviderName = 'Google';
 
       // Assert
       expect(expectedProvider, googleProviderName);
