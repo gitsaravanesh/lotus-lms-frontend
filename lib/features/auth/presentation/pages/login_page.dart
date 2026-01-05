@@ -176,10 +176,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             width: double.infinity,
                             child: OutlinedButton.icon(
                               onPressed: isLoading ? null : _handleGoogleSignIn,
-                              icon: Image.network(
-                                'https://www.google.com/favicon.ico',
-                                width: 20,
-                                height: 20,
+                              icon: const Icon(
+                                Icons.g_translate,
+                                size: 20,
                               ),
                               label: const Text('Sign in with Google'),
                               style: OutlinedButton.styleFrom(
