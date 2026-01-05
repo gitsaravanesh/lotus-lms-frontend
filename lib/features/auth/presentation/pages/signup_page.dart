@@ -302,10 +302,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             width: double.infinity,
                             child: OutlinedButton.icon(
                               onPressed: isLoading ? null : _handleGoogleSignUp,
-                              icon: Image.network(
-                                'https://www.google.com/favicon.ico',
-                                width: 20,
-                                height: 20,
+                              icon: const Icon(
+                                Icons.g_translate,
+                                size: 20,
                               ),
                               label: const Text('Sign up with Google'),
                               style: OutlinedButton.styleFrom(
