@@ -103,7 +103,16 @@ const Signup = () => {
     const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
     const CLIENT_ID = "49gusp4sidkggc371vghtdvujb";
 
-    const url = `https://${DOMAIN}/oauth2/authorize?client_id=${CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${REDIRECT_URI}&identity_provider=Google`;
+    // Use URLSearchParams to properly encode parameters
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      response_type: 'code',
+      scope: 'email openid profile',  // Space-separated scopes
+      redirect_uri: REDIRECT_URI,
+      identity_provider: 'Google'
+    });
+
+    const url = `https://${DOMAIN}/oauth2/authorize?${params.toString()}`;
     window.location.href = url;
   };
 

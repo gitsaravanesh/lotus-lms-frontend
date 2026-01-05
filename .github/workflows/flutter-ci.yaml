@@ -1,0 +1,172 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Flutter Build and Test Job
+  flutter-build:
+    name: Build and Test Flutter App
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout Code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+
+      # Get Flutter Dependencies
+      - name: Install Dependencies
+        run: |
+          echo "🔄 Clearing dependency cache..."
+          flutter pub cache clean --force || true
+          echo "📦 Installing dependencies..."
+          flutter pub get
+          echo "✅ Dependencies installed successfully"
+
+      # Verify Flutter Installation
+      - name: Verify Flutter
+        run: flutter doctor -v
+
+      # Run Code Generation
+      - name: Generate Code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      # Analyze Code
+      - name: Analyze Code
+        run: flutter analyze
+
+      # Run Tests
+      - name: Run Tests
+        run: flutter test
+
+      # Build Web Version
+      - name: Build Web
+        run: flutter build web --release
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+
+      # Upload Web Build Artifact
+      - name: Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web/
+          retention-days: 7
+
+  # Deploy to S3 (only on main branch)
+  deploy-web:
+    name: Deploy Web App to S3
+    needs: flutter-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ap-south-1
+      S3_BUCKET_NAME: lms-frontend-dev-fceacbe3
+
+    steps:
+      # Checkout Repository to access .env file
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Download Web Build Artifact
+      - name: Download Web Build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+
+      # Verify Build Folder Exists
+      - name: Check Build Folder
+        run: |
+          if [ ! -d "build/web" ]; then
+            echo "❌ Build folder not found!"
+            exit 1
+          fi
+          echo "✅ Build folder verified"
+          ls -la build/web
+
+      # Deploy to S3
+      - name: Deploy to S3
+        run: |
+          echo "Deploying to S3 bucket: $S3_BUCKET_NAME"
+          aws s3 sync build/web s3://$S3_BUCKET_NAME --delete --cache-control max-age=86400
+
+      # Upload .env file to S3 assets folder
+      - name: Upload .env to S3 assets folder
+        run: |
+          if [ -f ".env" ]; then
+            echo "📤 Uploading .env file to S3 assets folder..."
+            aws s3 cp .env s3://$S3_BUCKET_NAME/assets/.env
+            echo "✅ .env file uploaded successfully to s3://$S3_BUCKET_NAME/assets/.env"
+          else
+            echo "⚠️ Warning: .env file not found in repository"
+            exit 1
+          fi
+
+      # Output S3 Website URL
+      - name: Print Website URL
+        run: |
+          echo "✅ Deployment complete!"
+          echo "Visit your site at:"
+          echo "http://$S3_BUCKET_NAME.s3-website.$AWS_REGION.amazonaws.com"
+          echo "📁 .env file available at: s3://$S3_BUCKET_NAME/assets/.env"
+
+  # Build Android APK (optional)
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Install Dependencies
+        run: |
+          echo "🔄 Clearing dependency cache..."
+          flutter pub cache clean --force || true
+          echo "📦 Installing dependencies..."
+          flutter pub get
+          echo "✅ Dependencies installed successfully"
+
+      - name: Generate Code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
