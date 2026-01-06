@@ -81,7 +81,7 @@ jobs:
       S3_BUCKET_NAME: lms-frontend-dev-fceacbe3
 
     steps:
-      # Checkout Repository to access .env file
+      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -102,31 +102,25 @@ jobs:
           echo "✅ Build folder verified"
           ls -la build/web
 
-      # Deploy to S3
+      # Deploy to S3 with smart caching strategy
       - name: Deploy to S3
         run: |
-          echo "Deploying to S3 bucket: $S3_BUCKET_NAME"
-          aws s3 sync build/web s3://$S3_BUCKET_NAME --delete --cache-control max-age=86400
-
-      # Upload .env file to S3 assets folder
-      - name: Upload .env to S3 assets folder
-        run: |
-          if [ -f ".env" ]; then
-            echo "📤 Uploading .env file to S3 assets folder..."
-            aws s3 cp .env s3://$S3_BUCKET_NAME/assets/.env
-            echo "✅ .env file uploaded successfully to s3://$S3_BUCKET_NAME/assets/.env"
-          else
-            echo "⚠️ Warning: .env file not found in repository"
-            exit 1
-          fi
-
-      # Output S3 Website URL
-      - name: Print Website URL
-        run: |
+          echo "🚀 Deploying to S3 bucket: $S3_BUCKET_NAME"
+          echo "📦 Deploying index.html with no-cache..."
+          aws s3 cp build/web/index.html s3://$S3_BUCKET_NAME/index.html --cache-control no-cache --metadata-directive REPLACE
+          echo "📦 Deploying other assets with caching..."
+          aws s3 sync build/web s3://$S3_BUCKET_NAME --delete --exclude "index.html" --cache-control max-age=86400
           echo "✅ Deployment complete!"
-          echo "Visit your site at:"
-          echo "http://$S3_BUCKET_NAME.s3-website.$AWS_REGION.amazonaws.com"
-          echo "📁 .env file available at: s3://$S3_BUCKET_NAME/assets/.env"
+
+      # Output deployment verification
+      - name: Deployment Verification
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Website URL: http://$S3_BUCKET_NAME.s3-website.$AWS_REGION.amazonaws.com"
+          echo "🕒 Deployment timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "📝 Cache strategy:"
+          echo "   - index.html: no-cache (always fetches latest)"
+          echo "   - Other assets: max-age=86400 (24 hours)"
 
   # Build Android APK (optional)
   build-android:
