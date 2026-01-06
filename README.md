@@ -218,6 +218,25 @@ The app uses Material Design 3 with a custom color scheme:
 - **Error**: `#ff5252` (Red)
 - **Font**: Poppins (Google Fonts)
 
+## 🚀 Deployment
+
+The application is automatically deployed to AWS S3 and CloudFront on every push to the `main` branch.
+
+- **Production URL**: [https://dodyqtcfhwoe.cloudfront.net](https://dodyqtcfhwoe.cloudfront.net)
+- **Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions
+- **CI/CD**: GitHub Actions workflow handles build, test, and deployment
+
+### Quick Setup
+
+To enable automatic deployments, configure these GitHub secrets:
+- `AWS_ACCESS_KEY_ID` - AWS credentials
+- `AWS_SECRET_ACCESS_KEY` - AWS credentials
+- `CLOUDFRONT_DISTRIBUTION_ID` - CloudFront distribution ID
+- `API_BASE_URL` - Backend API URL
+- `RAZORPAY_KEY_ID` - Payment gateway key
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions.
+
 ## 📄 License
 
 This project is licensed under the MIT License.
