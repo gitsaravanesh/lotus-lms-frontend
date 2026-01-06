@@ -106,10 +106,19 @@ jobs:
       - name: Deploy to S3
         run: |
           echo "🚀 Deploying to S3 bucket: $S3_BUCKET_NAME"
+          
+          # Verify index.html exists
+          if [ ! -f "build/web/index.html" ]; then
+            echo "❌ index.html not found in build/web!"
+            exit 1
+          fi
+          
           echo "📦 Deploying index.html with no-cache..."
           aws s3 cp build/web/index.html s3://$S3_BUCKET_NAME/index.html --cache-control no-cache --metadata-directive REPLACE
+          
           echo "📦 Deploying other assets with caching..."
           aws s3 sync build/web s3://$S3_BUCKET_NAME --delete --exclude "index.html" --cache-control max-age=86400
+          
           echo "✅ Deployment complete!"
 
       # Output deployment verification
