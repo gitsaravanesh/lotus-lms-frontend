@@ -79,6 +79,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ap-south-1
       S3_BUCKET_NAME: lms-frontend-dev-fceacbe3
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 
     steps:
       # Checkout Repository
@@ -121,15 +122,30 @@ jobs:
           
           echo "✅ Deployment complete!"
 
+      # Invalidate CloudFront Cache
+      - name: Invalidate CloudFront Cache
+        run: |
+          echo "Creating CloudFront invalidation for distribution: $CLOUDFRONT_DISTRIBUTION_ID"
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "✅ CloudFront invalidation created: $INVALIDATION_ID"
+          echo "Waiting for invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --id $INVALIDATION_ID
+          echo "✅ CloudFront cache invalidated successfully"
+
       # Output deployment verification
       - name: Deployment Verification
         run: |
-          echo "✅ Deployment completed successfully!"
-          echo "🌐 Website URL: http://$S3_BUCKET_NAME.s3-website.$AWS_REGION.amazonaws.com"
+          echo "✅ Deployment complete!"
+          echo "🌐 Visit your site at: https://dodyqtcfhwoe.cloudfront.net"
+          echo "📦 S3 Bucket: s3://$S3_BUCKET_NAME"
+          echo "🔄 CloudFront cache has been invalidated"
           echo "🕒 Deployment timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "📝 Cache strategy:"
-          echo "   - index.html: no-cache (always fetches latest)"
-          echo "   - Other assets: max-age=86400 (24 hours)"
 
   # Build Android APK (optional)
   build-android:
