@@ -23,6 +23,6 @@ class AppConstants {
   // Razorpay
   static String get razorpayKeyId => const String.fromEnvironment(
     'RAZORPAY_KEY_ID',
-    defaultValue: 'rzp_test_example',
+    defaultValue: 'rzp_test_RbvMQRpHT3gMcN',
   );
 }

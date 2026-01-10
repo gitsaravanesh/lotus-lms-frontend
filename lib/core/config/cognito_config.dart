@@ -11,7 +11,7 @@ class CognitoConfig {
   static String get clientId => 
     dotenv.env['CLIENT_ID'] ?? 
     dotenv.env['REACT_APP_CLIENT_ID'] ?? 
-    '49gusp4sidkggc371vghtdvujb';  // Updated to original client ID
+    '5ppt7ntr3a3ckvc670v71h920r';  // Updated to original client ID
     
   static String get region => 
     dotenv.env['AWS_REGION'] ?? 
