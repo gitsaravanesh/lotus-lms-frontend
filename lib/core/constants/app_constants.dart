@@ -13,7 +13,7 @@ class AppConstants {
     {'value': 'Cloud', 'label': 'Cloud'},
     {'value': 'AI', 'label': 'AI'},
     {'value': 'Full Stack', 'label': 'Full Stack'},
-    {'value': 'Testing', 'label': 'Testing'},
+    {'value': 'Testing', 'label': 'Testing'}
   ];
   
   // Validation
@@ -23,6 +23,6 @@ class AppConstants {
   // Razorpay
   static String get razorpayKeyId => const String.fromEnvironment(
     'RAZORPAY_KEY_ID',
-    defaultValue: 'rzp_test_RbvMQRpHT3gMcN',
+    defaultValue: 'rzp_test_RbvMQRpHT3gMcN'
   );
 }
