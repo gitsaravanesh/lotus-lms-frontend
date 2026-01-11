@@ -32,14 +32,14 @@ class JwtParser {
     }
 
     // Cognito internal username
-    if (payload['cognito:username'] != null) {
-      return payload['cognito:username'] as String;
-    }
+    //if (payload['cognito:username'] != null) {
+    //  return payload['cognito:username'] as String;
+    //}
 
     // OIDC profile username
-    if (payload['preferred_username'] != null) {
-      return payload['preferred_username'] as String;
-    }
+    //if (payload['preferred_username'] != null) {
+    //  return payload['preferred_username'] as String;
+    //}
 
     // Fallback
     if (payload['email'] != null) {
