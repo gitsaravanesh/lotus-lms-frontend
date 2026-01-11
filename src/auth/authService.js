@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const CLIENT_ID = "49gusp4sidkggc371vghtdvujb";
+const CLIENT_ID = "5ppt7ntr3a3ckvc670v71h920r";
 const REDIRECT_URI = "https://dodyqytcfhwoe.cloudfront.net/";
 const DOMAIN = "lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com";
 
