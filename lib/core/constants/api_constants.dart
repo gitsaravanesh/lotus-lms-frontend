@@ -3,7 +3,7 @@ class ApiConstants {
   // Base URL will be loaded from environment
   static String get baseUrl => const String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: https://34xrp5te7l.execute-api.ap-south-1.amazonaws.com/dev'
+    defaultValue: 'https://34xrp5te7l.execute-api.ap-south-1.amazonaws.com/dev'
   );
   
   // Endpoints
