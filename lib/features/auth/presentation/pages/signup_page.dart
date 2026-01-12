@@ -45,7 +45,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   void _handleSignup() {
     if (_formKey.currentState!.validate()) {
       ref.read(authProvider.notifier).signUp(
-        studentUsername: _usernameController.text.trim(), // ✅ FIXED
+        username: _usernameController.text.trim(), // ✅ REQUIRED
         email: _emailController.text.trim(),
         password: _passwordController.text,
         topic: _selectedTopic.isEmpty ? null : _selectedTopic,
