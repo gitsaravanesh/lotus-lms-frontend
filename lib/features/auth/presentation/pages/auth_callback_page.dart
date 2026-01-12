@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/error_banner.dart';
@@ -9,7 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/auth_state.dart';
 
 /// OAuth Callback Page
-/// Handles the redirect from Cognito after Google OAuth authentication
+/// Handles redirect from Cognito after Google OAuth authentication
 class AuthCallbackPage extends ConsumerStatefulWidget {
   final String? code;
   final String? error;
@@ -23,10 +24,12 @@ class AuthCallbackPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AuthCallbackPage> createState() => _AuthCallbackPageState();
+  ConsumerState<AuthCallbackPage> createState() =>
+      _AuthCallbackPageState();
 }
 
-class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
+class _AuthCallbackPageState
+    extends ConsumerState<AuthCallbackPage> {
   static const _errorDisplayDuration = Duration(seconds: 3);
   String? _errorMessage;
 
@@ -37,7 +40,7 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
   }
 
   Future<void> _handleCallback() async {
-    // Handle OAuth errors
+    /// 🔴 HANDLE OAUTH ERROR
     if (widget.error != null) {
       final formattedError = Uri.decodeComponent(
         widget.errorDescription ?? 'Login failed.',
@@ -45,9 +48,11 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
 
       String errorMessage;
       if (formattedError.toLowerCase().contains('not enabled')) {
-        errorMessage = 'Your account has not been enabled yet. Please contact support.';
+        errorMessage =
+            'Your account has not been enabled yet. Please contact support.';
       } else if (formattedError.toLowerCase().contains('disabled')) {
-        errorMessage = 'Your account has been disabled. Please contact the administrator.';
+        errorMessage =
+            'Your account has been disabled. Please contact the administrator.';
       } else {
         errorMessage = formattedError;
       }
@@ -56,7 +61,6 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
         _errorMessage = errorMessage;
       });
 
-      // Navigate back to login after showing error
       await Future.delayed(_errorDisplayDuration);
       if (mounted) {
         context.go('/');
@@ -64,54 +68,61 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
       return;
     }
 
-    // Handle successful authentication
+    /// 🟢 HANDLE SUCCESSFUL AUTH
     if (widget.code != null) {
       try {
-        // Retrieve pending username from session storage
         final prefs = await SharedPreferences.getInstance();
-        final pendingUsername = prefs.getString(AppConstants.pendingGoogleUsernameKey);
-        final pendingTopic = prefs.getString(AppConstants.pendingGoogleTopicKey);
 
-        // Store pending topic if available
-        if (pendingTopic != null) {
-          await prefs.setString(AppConstants.userTopicKey, pendingTopic);
+        /// ✅ THIS IS STUDENT USERNAME
+        final String? studentUsername =
+            prefs.getString(AppConstants.pendingGoogleUsernameKey);
+
+        final String? pendingTopic =
+            prefs.getString(AppConstants.pendingGoogleTopicKey);
+
+        if (pendingTopic != null && pendingTopic.isNotEmpty) {
+          await prefs.setString(
+            AppConstants.userTopicKey,
+            pendingTopic,
+          );
         }
 
-        // Clean up pending data
+        /// CLEANUP TEMP DATA
         await prefs.remove(AppConstants.pendingGoogleUsernameKey);
         await prefs.remove(AppConstants.pendingGoogleTopicKey);
 
-        // Exchange code for tokens
-        await ref.read(authProvider.notifier).exchangeCodeForToken(
-          widget.code!,
-          pendingUsername,
-        );
+        /// 🔑 EXCHANGE CODE FOR TOKEN
+        /// studentUsername is passed to backend
+        await ref
+            .read(authProvider.notifier)
+            .exchangeCodeForToken(
+              widget.code!,
+              studentUsername,
+            );
 
-        // Navigation will be handled by auth state listener
+        // Navigation handled by auth state listener
       } catch (e) {
         setState(() {
           _errorMessage = e.toString();
         });
 
-        // Navigate back to login after showing error
         await Future.delayed(_errorDisplayDuration);
         if (mounted) {
           context.go('/');
         }
       }
     } else {
-      // No code or error - redirect to login
+      /// No code, no error → back to login
       context.go('/');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to auth state
+    /// 🔄 LISTEN TO AUTH STATE
     ref.listen<AuthState>(authProvider, (previous, next) {
       next.maybeWhen(
         authenticated: (_) {
-          // Navigate to dashboard on successful authentication
           context.go('/dashboard');
         },
         error: (message) {
@@ -141,7 +152,8 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
                 ),
               ] else ...[
                 const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
                 const SizedBox(height: 24),
                 Text(
