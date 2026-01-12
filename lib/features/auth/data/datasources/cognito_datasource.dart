@@ -14,27 +14,30 @@ class CognitoDataSource {
   
   /// Sign up with email and password
   Future<CognitoUserPoolData> signUp({
-    required String username,
-    required String email,
-    required String password,
-    String? topic,
-  }) async {
-    final userAttributes = [
-      AttributeArg(name: 'email', value: email),
-    ];
-    
-    if (topic != null && topic.isNotEmpty) {
-      userAttributes.add(
-        AttributeArg(name: 'custom:interest', value: topic),
-      );
-    }
-    
-    return await _userPool.signUp(
-      username,
-      password,
-      userAttributes: userAttributes,
+  required String username,
+  required String email,
+  required String password,
+  String? topic,
+}) async {
+  final userAttributes = [
+    AttributeArg(name: 'email', value: email),
+
+    /// ✅ ADD THIS LINE
+    AttributeArg(name: 'custom:student_username', value: username),
+  ];
+
+  if (topic != null && topic.isNotEmpty) {
+    userAttributes.add(
+      AttributeArg(name: 'custom:interest', value: topic),
     );
   }
+
+  return await _userPool.signUp(
+    username, // Cognito login username
+    password,
+    userAttributes: userAttributes,
+  );
+}
   
   /// Sign in with email/username and password
   Future<CognitoUserSession?> signIn({
