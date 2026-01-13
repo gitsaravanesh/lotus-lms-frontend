@@ -34,6 +34,13 @@ class AuthRepositoryImpl {
     return _dataSource.signOut();
   }
 
+    // -------------------------------
+  // HOSTED UI URL
+  // -------------------------------
+  String getHostedUIUrl() {
+    return _dataSource.getHostedUIUrl();
+  }
+
   Future<bool> isAuthenticated() async {
     final user = await _dataSource.getCurrentUser();
     return user != null;
