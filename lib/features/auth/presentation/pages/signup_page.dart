@@ -83,8 +83,6 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           );
         }
 
-        final oauthUrl = ref.read(authProvider.notifier).getGoogleOAuthUrl();
-
         await launchUrl(
           Uri.parse(
             ref.read(authProvider.notifier).getGoogleOAuthUrl(),
