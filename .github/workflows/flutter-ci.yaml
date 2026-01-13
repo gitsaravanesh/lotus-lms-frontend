@@ -44,6 +44,13 @@ jobs:
       - name: Generate Code
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
+      - name: Flutter clean & reset
+        run: |
+          flutter clean
+          rm -rf .dart_tool
+          rm -rf build
+          flutter pub get
+
       # Analyze Code
       - name: Analyze Code
         run: flutter analyze
