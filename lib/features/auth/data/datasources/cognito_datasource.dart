@@ -40,22 +40,21 @@ class CognitoDataSource {
 }
   
   /// Sign in with email/username and password
-  Future<CognitoUserSession?> signIn({
-    required String identifier,
-    required String password,
-  }) async {
-    final cognitoUser = CognitoUser(
-      identifier,
-      _userPool,
-    );
-    
-    final authDetails = AuthenticationDetails(
+  Future<InitiateAuthResponse> signIn({
+  required String identifier,
+  required String password,
+}) async {
+  final response = await _cognitoIdp.initiateAuth(
+    AuthFlowType.userPasswordAuth,
+    AuthParametersType(
       username: identifier,
       password: password,
-    );
-    
-    return await cognitoUser.authenticateUser(authDetails);
-  }
+    ),
+    clientId: _clientId,
+  );
+
+  return response;
+}
   
   /// Get current user session
   Future<CognitoUserSession?> getCurrentSession() async {
