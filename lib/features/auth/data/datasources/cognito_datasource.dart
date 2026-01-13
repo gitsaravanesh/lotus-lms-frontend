@@ -2,24 +2,12 @@ import 'package:amazon_cognito_identity_dart_2/cognito.dart';
 
 class CognitoDataSource {
   final CognitoUserPool _userPool;
-  final String _clientId;
-  final String _domain;
-  final String _redirectUri;
-  final String _logoutRedirectUri;
 
   CognitoDataSource({
     required String userPoolId,
     required String clientId,
-    required String domain,
-    required String redirectUri,
-    required String logoutRedirectUri,
-  })  : _clientId = clientId,
-        _domain = domain,
-        _redirectUri = redirectUri,
-        _logoutRedirectUri = logoutRedirectUri,
-        _userPool = CognitoUserPool(userPoolId, clientId);
+  }) : _userPool = CognitoUserPool(userPoolId, clientId);
 
-  // ---------- SIGN UP ----------
   Future<CognitoUserPoolData> signUp({
     required String username,
     required String email,
@@ -47,8 +35,7 @@ class CognitoDataSource {
     );
   }
 
-  // ---------- SIGN IN ----------
-  Future<CognitoUserSession> signIn({
+  Future<void> signIn({
     required String identifier,
     required String password,
   }) async {
@@ -63,11 +50,8 @@ class CognitoDataSource {
     if (session == null) {
       throw Exception('Authentication failed');
     }
-
-    return session;
   }
 
-  // ---------- SIGN OUT ----------
   Future<void> signOut() async {
     final user = await _userPool.getCurrentUser();
     if (user != null) {
@@ -75,23 +59,7 @@ class CognitoDataSource {
     }
   }
 
-  // ---------- CURRENT USER ----------
   Future<CognitoUser?> getCurrentUser() {
     return _userPool.getCurrentUser();
-  }
-
-  // ---------- HOSTED UI ----------
-  String getHostedUIUrl() {
-    return 'https://$_domain/login'
-        '?client_id=$_clientId'
-        '&response_type=code'
-        '&scope=email+openid+profile'
-        '&redirect_uri=$_redirectUri';
-  }
-
-  String getLogoutUrl() {
-    return 'https://$_domain/logout'
-        '?client_id=$_clientId'
-        '&logout_uri=$_logoutRedirectUri';
   }
 }

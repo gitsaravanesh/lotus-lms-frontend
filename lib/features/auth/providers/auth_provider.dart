@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../data/datasources/cognito_datasource.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import 'auth_state.dart';
@@ -7,11 +6,8 @@ import 'auth_state.dart';
 final authProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final dataSource = CognitoDataSource(
-    userPoolId: AppConstants.userPoolId,
-    clientId: AppConstants.clientId,
-    domain: AppConstants.cognitoDomain,
-    redirectUri: AppConstants.cognitoRedirectUri,
-    logoutRedirectUri: AppConstants.cognitoLogoutRedirectUri,
+    userPoolId: 'YOUR_USER_POOL_ID',
+    clientId: 'YOUR_CLIENT_ID',
   );
 
   final repository = AuthRepositoryImpl(
@@ -52,11 +48,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = const AuthState.loading();
     try {
-      final session = await _repo.signIn(
+      await _repo.signIn(
         identifier: identifier,
         password: password,
       );
-      state = AuthState.authenticated(session);
+      state = const AuthState.authenticated();
     } catch (e) {
       state = AuthState.error(e.toString());
     }
@@ -65,25 +61,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     await _repo.signOut();
     state = const AuthState.unauthenticated();
-  }
-
-  String getGoogleOAuthUrl() => _repo.getHostedUIUrl();
-
-  String getLogoutUrl() => _repo.getLogoutUrl();
-
-  Future<void> exchangeCodeForToken(
-    String code,
-    String? studentUsername,
-  ) async {
-    state = const AuthState.loading();
-    try {
-      final session = await _repo.exchangeCodeForToken(
-        code: code,
-        studentUsername: studentUsername,
-      );
-      state = AuthState.authenticated(session);
-    } catch (e) {
-      state = AuthState.error(e.toString());
-    }
   }
 }
