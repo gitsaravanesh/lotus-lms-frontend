@@ -6,9 +6,12 @@ import 'auth_state.dart';
 final authProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final dataSource = CognitoDataSource(
-    userPoolId: 'YOUR_USER_POOL_ID',
-    clientId: 'YOUR_CLIENT_ID',
+    userPoolId: 'ap-south-1_6C5lP9yfm',
+    clientId: '5ppt7ntr3a3ckvc670v71h920r',
+    domain: 'lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com',
+    redirectUri: 'https://dodyqytcfhwoe.cloudfront.net/',
   );
+
 
   final repository = AuthRepositoryImpl(
     cognitoDataSource: dataSource,
