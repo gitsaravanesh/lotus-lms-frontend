@@ -1,184 +1,62 @@
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/entities/user.dart';
+import 'package:amazon_cognito_identity_dart_2/cognito.dart';
 import '../datasources/cognito_datasource.dart';
-import '../datasources/auth_remote_datasource.dart';
-import '../models/user_model.dart';
-import '../../../../core/utils/jwt_parser.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/constants/app_constants.dart';
 
-/// Auth Repository Implementation
-class AuthRepositoryImpl implements AuthRepository {
-  final CognitoDataSource _cognitoDataSource;
-  final AuthRemoteDataSource _remoteDataSource;
-  
-  AuthRepositoryImpl({
-    required CognitoDataSource cognitoDataSource,
-    required AuthRemoteDataSource remoteDataSource,
-  })  : _cognitoDataSource = cognitoDataSource,
-        _remoteDataSource = remoteDataSource;
-  
-  @override
+class AuthRepositoryImpl {
+  final CognitoDataSource _dataSource;
+
+  AuthRepositoryImpl({required CognitoDataSource cognitoDataSource})
+      : _dataSource = cognitoDataSource;
+
   Future<void> signUp({
     required String username,
     required String email,
     required String password,
     String? topic,
-  }) async {
-    await _cognitoDataSource.signUp(
+  }) {
+    return _dataSource.signUp(
       username: username,
       email: email,
       password: password,
       topic: topic,
     );
   }
-  
-  @override
-  Future<User> signIn({
+
+  Future<CognitoUserSession> signIn({
     required String identifier,
     required String password,
-  }) async {
-    final session = await _cognitoDataSource.signIn(
+  }) {
+    return _dataSource.signIn(
       identifier: identifier,
       password: password,
     );
-    
-    if (session == null) {
-      throw Exception('Failed to sign in');
-    }
-    
-    final idToken = session.getIdToken().getJwtToken();
-    if (idToken == null) {
-      throw Exception('Failed to get authentication token');
-    }
-    
-    // Store token
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.idTokenKey, idToken);
-    
-    // Parse token
-    final payload = JwtParser.parseJwt(idToken);
-    if (payload == null) {
-      throw Exception('Failed to parse token');
-    }
-    
-    // Determine username
-    final username = await _determineAndPersistUsername(payload, null);
-    
-    // Fetch tenant mapping
-    final tenantMapping = await _remoteDataSource.fetchUserTenant(username);
-    
-    return UserModel(
-      name: JwtParser.getNameFromPayload(payload) ?? username,
-      username: username,
-      email: JwtParser.getEmailFromPayload(payload) ?? '',
-      tenantId: tenantMapping.tenantId,
-      role: tenantMapping.role,
-    ).toEntity();
   }
-  
-  @override
-  Future<User> exchangeCodeForToken(String code, String? pendingUsername) async {
-    final tokens = await _remoteDataSource.exchangeCodeForToken(code);
-    final idToken = tokens['id_token'] as String;
-    
-    // Store token
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.idTokenKey, idToken);
-    
-    // Parse token
-    final payload = JwtParser.parseJwt(idToken);
-    if (payload == null) {
-      throw Exception('Failed to parse token');
-    }
-    
-    // Determine username
-    final username = await _determineAndPersistUsername(payload, pendingUsername);
-    
-    // Fetch tenant mapping
-    final tenantMapping = await _remoteDataSource.fetchUserTenant(username);
-    
-    return UserModel(
-      name: JwtParser.getNameFromPayload(payload) ?? username,
-      username: username,
-      email: JwtParser.getEmailFromPayload(payload) ?? '',
-      tenantId: tenantMapping.tenantId,
-      role: tenantMapping.role,
-    ).toEntity();
+
+  Future<void> signOut() {
+    return _dataSource.signOut();
   }
-  
-  @override
-  Future<User?> getCurrentUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(AppConstants.idTokenKey);
-      
-      if (token == null) return null;
-      
-      final payload = JwtParser.parseJwt(token);
-      if (payload == null) return null;
-      
-      final username = await _determineAndPersistUsername(payload, null);
-      final tenantMapping = await _remoteDataSource.fetchUserTenant(username);
-      
-      return UserModel(
-        name: JwtParser.getNameFromPayload(payload) ?? username,
-        username: username,
-        email: JwtParser.getEmailFromPayload(payload) ?? '',
-        tenantId: tenantMapping.tenantId,
-        role: tenantMapping.role,
-      ).toEntity();
-    } catch (e) {
-      return null;
-    }
+
+  String getHostedUIUrl() {
+    return _dataSource.getHostedUIUrl();
   }
-  
-  @override
-  Future<void> signOut() async {
-    await _cognitoDataSource.signOut();
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(AppConstants.idTokenKey);
-    await prefs.remove(AppConstants.usernameKey);
-    await prefs.remove(AppConstants.userTopicKey);
-  }
-  
-  @override
-  String getGoogleOAuthUrl() {
-    return _cognitoDataSource.getHostedUIUrl();
-  }
-  
-  @override
+
   String getLogoutUrl() {
-    return _cognitoDataSource.getLogoutUrl();
+    return _dataSource.getLogoutUrl();
   }
-  
-  /// Helper to determine and persist username
-  Future<String> _determineAndPersistUsername(
-    Map<String, dynamic> payload,
-    String? pendingUsername,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    
-    // 1. Check existing username
-    final existingUsername = prefs.getString(AppConstants.usernameKey);
-    if (existingUsername != null) {
-      return existingUsername;
+
+  Future<CognitoUser?> getCurrentUser() {
+    return _dataSource.getCurrentUser();
+  }
+
+  // Google OAuth callback
+  Future<CognitoUserSession> exchangeCodeForToken({
+    required String code,
+    String? studentUsername,
+  }) async {
+    final user = CognitoUser(studentUsername ?? '', _dataSource._userPool);
+    final session = await user.getSession();
+    if (session == null) {
+      throw Exception('OAuth session failed');
     }
-    
-    // 2. Use pending username
-    if (pendingUsername != null) {
-      await prefs.setString(AppConstants.usernameKey, pendingUsername);
-      return pendingUsername;
-    }
-    
-    // 3. Extract from JWT payload
-    final username = JwtParser.getUsernameFromPayload(payload);
-    if (username != null) {
-      await prefs.setString(AppConstants.usernameKey, username);
-      return username;
-    }
-    
-    throw Exception('Unable to determine username');
+    return session;
   }
 }
