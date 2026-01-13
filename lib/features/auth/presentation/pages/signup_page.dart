@@ -83,11 +83,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           );
         }
 
-        final oauthUrl =
-            ref.read(authProvider.notifier).getGoogleOAuthUrl();
+        final oauthUrl = ref.read(authProvider.notifier).getGoogleOAuthUrl();
 
         await launchUrl(
-          Uri.parse(oauthUrl),
+          Uri.parse(
+            ref.read(authProvider.notifier).getGoogleOAuthUrl(),
+          ),
           mode: LaunchMode.platformDefault,
           webOnlyWindowName: '_self',
         );
@@ -325,7 +326,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                               text: 'Sign Up',
                               isLoading: isLoading,
                               onPressed:
-                                  isLoading ? null : _handleSignup(),
+                                  isLoading ? null : _handleSignup,
                             ),
                           ),
                           const SizedBox(height: 16),
