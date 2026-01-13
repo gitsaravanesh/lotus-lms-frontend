@@ -122,7 +122,7 @@ class _AuthCallbackPageState
     /// 🔄 LISTEN TO AUTH STATE
     ref.listen<AuthState>(authProvider, (previous, next) {
       next.maybeWhen(
-        authenticated: (_) {
+        authenticated: () {
           context.go('/dashboard');
         },
         error: (message) {

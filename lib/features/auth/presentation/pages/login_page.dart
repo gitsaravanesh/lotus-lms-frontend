@@ -63,7 +63,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // Listen to auth state changes
     ref.listen<AuthState>(authProvider, (previous, next) {
       next.maybeWhen(
-        authenticated: (_) {
+        authenticated: () {
           // Navigate to dashboard on successful authentication
           context.go('/dashboard');
         },
