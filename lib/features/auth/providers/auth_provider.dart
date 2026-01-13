@@ -62,4 +62,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _repo.signOut();
     state = const AuthState.unauthenticated();
   }
+
+  // -------------------------------
+  // GOOGLE OAUTH URL (Hosted UI)
+  // -------------------------------
+  String getGoogleOAuthUrl() {
+    return _repo.getHostedUIUrl();
+  }
+
+  // -------------------------------
+  // EXCHANGE OAUTH CODE
+  // -------------------------------
+  Future<void> exchangeCodeForToken(
+    String code,
+    String? studentUsername,
+  ) async {
+    state = const AuthState.loading();
+    try {
+      await _repo.exchangeCodeForToken(
+        code: code,
+        studentUsername: studentUsername,
+      );
+      state = const AuthState.authenticated();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
 }

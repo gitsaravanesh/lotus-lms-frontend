@@ -38,4 +38,16 @@ class AuthRepositoryImpl {
     final user = await _dataSource.getCurrentUser();
     return user != null;
   }
+
+  Future<void> exchangeCodeForToken({
+    required String code,
+    String? studentUsername,
+  }) async {
+    // Hosted UI already authenticated the user.
+    // Session will be available via getCurrentUser().
+    final user = await _dataSource.getCurrentUser();
+    if (user == null) {
+      throw Exception('OAuth login failed');
+    }
+  }
 }

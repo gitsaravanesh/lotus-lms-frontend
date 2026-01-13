@@ -162,7 +162,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             width: double.infinity,
                             child: CustomButton(
                               text: 'Sign In',
-                              onPressed: isLoading ? null : _handleLogin,
+                              onPressed: isLoading ? null : () => _handleLogin(),                              
                               isLoading: isLoading,
                             ),
                           ),
@@ -174,8 +174,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: isLoading ? null : _handleGoogleSignIn,
+                            child: OutlinedButton.icon(                              
+                              onPressed: isLoading ? null : () => _handleGoogleSignIn(),
                               icon: const Icon(
                                 Icons.g_translate,
                                 size: 20,

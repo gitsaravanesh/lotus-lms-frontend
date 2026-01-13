@@ -325,7 +325,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                               text: 'Sign Up',
                               isLoading: isLoading,
                               onPressed:
-                                  isLoading ? null : _handleSignup,
+                                  isLoading ? null : _handleSignup(),
                             ),
                           ),
                           const SizedBox(height: 16),
