@@ -2,29 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/datasources/cognito_datasource.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import 'auth_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotus_lms/core/config/cognito_config.dart';
+import 'package:lotus_lms/features/auth/data/repositories/auth_repository.dart';
+import 'package:lotus_lms/features/auth/presentation/providers/auth_state.dart';
 
 final authProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final dataSource = CognitoDataSource(
-    userPoolId: 'ap-south-1_6C5lP9yfm',
-    clientId: '5ppt7ntr3a3ckvc670v71h920r',
-    domain: 'lms-auth-dev-sarav.auth.ap-south-1.amazoncognito.com',
-    redirectUri: 'https://dodyqytcfhwoe.cloudfront.net/',
-  );
-
-
-  final repository = AuthRepositoryImpl(
-    cognitoDataSource: dataSource,
-  );
-
-  return AuthNotifier(repository);
+  final authRepository = ref.read(authRepositoryProvider);
+  return AuthNotifier(authRepository);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepositoryImpl _repo;
+  final AuthRepository _authRepository;
 
-  AuthNotifier(this._repo) : super(const AuthState.initial());
+  AuthNotifier(this._authRepository)
+      : super(const AuthState.initial());
 
+  // ======================================================
+  // 🔐 EMAIL / PASSWORD SIGNUP (DIRECT USER POOL)
+  // ======================================================
   Future<void> signUp({
     required String username,
     required String email,
@@ -32,63 +29,73 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? topic,
   }) async {
     state = const AuthState.loading();
+
     try {
-      await _repo.signUp(
+      await _authRepository.signUpWithEmail(
+        userPoolId: CognitoConfig.directUserPoolId,
+        clientId: CognitoConfig.directClientId,
         username: username,
         email: email,
         password: password,
         topic: topic,
       );
-      state = const AuthState.unauthenticated();
+
+      state = const AuthState.signupSuccess(
+        message:
+            'Signup successful! Please check your email to verify your account.',
+      );
     } catch (e) {
       state = AuthState.error(e.toString());
     }
   }
 
-  Future<void> signIn({
-    required String identifier,
+  // ======================================================
+  // 🌐 GOOGLE SIGNUP (HOSTED UI – GOOGLE USER POOL)
+  // ======================================================
+  String getGoogleOAuthUrl() {
+    final redirectUri = Uri.base.origin + '/callback';
+
+    final uri = Uri.parse(
+      '${CognitoConfig.googleDomain}/oauth2/authorize',
+    ).replace(queryParameters: {
+      'response_type': 'code',
+      'client_id': CognitoConfig.googleOAuthClientId,
+      'redirect_uri': redirectUri,
+      'scope': CognitoConfig.googleScopes.join(' '),
+      'identity_provider': 'Google',
+    });
+
+    return uri.toString();
+  }
+
+  // ======================================================
+  // 🔑 EMAIL / PASSWORD LOGIN (DIRECT USER POOL)
+  // ======================================================
+  Future<void> login({
+    required String username,
     required String password,
   }) async {
     state = const AuthState.loading();
+
     try {
-      await _repo.signIn(
-        identifier: identifier,
+      await _authRepository.loginWithEmail(
+        userPoolId: CognitoConfig.directUserPoolId,
+        clientId: CognitoConfig.directClientId,
+        username: username,
         password: password,
       );
+
       state = const AuthState.authenticated();
     } catch (e) {
       state = AuthState.error(e.toString());
     }
   }
 
-  Future<void> signOut() async {
-    await _repo.signOut();
+  // ======================================================
+  // 🚪 LOGOUT (POOL-AGNOSTIC)
+  // ======================================================
+  Future<void> logout() async {
+    await _authRepository.logout();
     state = const AuthState.unauthenticated();
-  }
-
-  // -------------------------------
-  // GOOGLE OAUTH URL (Hosted UI)
-  // -------------------------------
-  String getGoogleOAuthUrl() {
-    return _repo.getHostedUIUrl();
-  }
-
-  // -------------------------------
-  // EXCHANGE OAUTH CODE
-  // -------------------------------
-  Future<void> exchangeCodeForToken(
-    String code,
-    String? studentUsername,
-  ) async {
-    state = const AuthState.loading();
-    try {
-      await _repo.exchangeCodeForToken(
-        code: code,
-        studentUsername: studentUsername,
-      );
-      state = const AuthState.authenticated();
-    } catch (e) {
-      state = AuthState.error(e.toString());
-    }
   }
 }

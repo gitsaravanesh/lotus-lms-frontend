@@ -2,41 +2,63 @@ import 'package:dio/dio.dart';
 import '../../../../core/api/dio_client.dart';
 import '../../../../core/config/cognito_config.dart';
 import '../models/tenant_mapping_model.dart';
+import 'package:amazon_cognito_identity_dart_2/cognito.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Auth Remote Data Source for API calls
-class AuthRemoteDataSource {
-  final Dio _dio = DioClient.instance;
-  
-  /// Exchange authorization code for tokens (OAuth callback)
-  Future<Map<String, dynamic>> exchangeCodeForToken(String code) async {
-    final body = {
-      'grant_type': 'authorization_code',
-      'client_id': CognitoConfig.clientId,
-      'redirect_uri': CognitoConfig.redirectUri,
-      'code': code,
-    };
-    
-    final response = await _dio.post(
-      'https://${CognitoConfig.cognitoDomain}/oauth2/token',
-      data: body,
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      ),
+abstract class AuthRemoteDatasource {
+  Future<void> persistSession(CognitoUserSession session);
+  Future<void> clearSession();
+  Future<CognitoUserSession?> getSession();
+}
+
+class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
+  static const String _accessTokenKey = 'access_token';
+  static const String _idTokenKey = 'id_token';
+  static const String _refreshTokenKey = 'refresh_token';
+
+  @override
+  Future<void> persistSession(CognitoUserSession session) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      _accessTokenKey,
+      session.getAccessToken().getJwtToken(),
     );
-    
-    return response.data as Map<String, dynamic>;
+
+    await prefs.setString(
+      _idTokenKey,
+      session.getIdToken().getJwtToken(),
+    );
+
+    await prefs.setString(
+      _refreshTokenKey,
+      session.getRefreshToken()?.getToken() ?? '',
+    );
   }
-  
-  /// Fetch user tenant mapping from backend
-  Future<TenantMappingModel> fetchUserTenant(String userId) async {
-    final response = await _dio.get(
-      '/user/tenant',
-      queryParameters: {'user_id': userId},
+
+  @override
+  Future<CognitoUserSession?> getSession() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final accessToken = prefs.getString(_accessTokenKey);
+    final idToken = prefs.getString(_idTokenKey);
+
+    if (accessToken == null || idToken == null) {
+      return null;
+    }
+
+    return CognitoUserSession(
+      CognitoIdToken(idToken),
+      CognitoAccessToken(accessToken),
     );
-    
-    return TenantMappingModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove(_accessTokenKey);
+    await prefs.remove(_idTokenKey);
+    await prefs.remove(_refreshTokenKey);
   }
 }
