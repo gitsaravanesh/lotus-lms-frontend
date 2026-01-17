@@ -9,8 +9,8 @@ import 'package:lotus_lms/features/auth/presentation/providers/auth_state.dart';
 
 final authProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
-  return AuthNotifier(authRepository);
+  final repo = ref.read(authRepositoryProvider);
+  return AuthNotifier(repo);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
