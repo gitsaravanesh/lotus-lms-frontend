@@ -19,6 +19,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authRepository)
       : super(const AuthState.initial());
 
+  Future<void> exchangeCodeForToken(
+    String authorizationCode,
+    String? username,
+  ) async {
+    try {
+      state = const AuthState.loading();
+
+      await _authRepository.exchangeCodeForToken(
+        authorizationCode: authorizationCode,
+        username: username,
+      );
+
+      state = const AuthState.authenticated();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
   // ======================================================
   // 🔐 EMAIL / PASSWORD SIGNUP (DIRECT USER POOL)
   // ======================================================
