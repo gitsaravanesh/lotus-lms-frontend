@@ -20,7 +20,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       : super(const AuthState.initial());
 
   Future<void> exchangeCodeForToken(
-    required String authorizationCode,
+    required final String authorizationCode,
     String? username,
   ) async {
     try {
