@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'auth_state.freezed.dart';
+import '../presentation/providers/auth_state.dart';
 
 @freezed
 class AuthState with _$AuthState {
