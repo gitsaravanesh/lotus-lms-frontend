@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  provider: ^6.1.2
   
   # State Management
   flutter_riverpod: ^2.5.0

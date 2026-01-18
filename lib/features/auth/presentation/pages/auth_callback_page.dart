@@ -1,177 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/error_banner.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/auth_state.dart';
 
-/// OAuth Callback Page
-/// Handles redirect from Cognito after Google OAuth authentication
-class AuthCallbackPage extends ConsumerStatefulWidget {
-  final String? code;
-  final String? error;
-  final String? errorDescription;
-
-  const AuthCallbackPage({
-    super.key,
-    this.code,
-    this.error,
-    this.errorDescription,
-  });
+class AuthCallbackPage extends StatefulWidget {
+  const AuthCallbackPage({super.key});
 
   @override
-  ConsumerState<AuthCallbackPage> createState() =>
-      _AuthCallbackPageState();
+  State<AuthCallbackPage> createState() => _AuthCallbackPageState();
 }
 
-class _AuthCallbackPageState
-    extends ConsumerState<AuthCallbackPage> {
-  static const _errorDisplayDuration = Duration(seconds: 3);
-  String? _errorMessage;
-
+class _AuthCallbackPageState extends State<AuthCallbackPage> {
   @override
   void initState() {
     super.initState();
-    _handleCallback();
-  }
 
-  Future<void> _handleCallback() async {
-    /// 🔴 HANDLE OAUTH ERROR
-    if (widget.error != null) {
-      final formattedError = Uri.decodeComponent(
-        widget.errorDescription ?? 'Login failed.',
-      );
+    // Simulate OAuth callback processing
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authNotifier = context.read<AuthNotifier>();
 
-      String errorMessage;
-      if (formattedError.toLowerCase().contains('not enabled')) {
-        errorMessage =
-            'Your account has not been enabled yet. Please contact support.';
-      } else if (formattedError.toLowerCase().contains('disabled')) {
-        errorMessage =
-            'Your account has been disabled. Please contact the administrator.';
-      } else {
-        errorMessage = formattedError;
-      }
-
-      setState(() {
-        _errorMessage = errorMessage;
-      });
-
-      await Future.delayed(_errorDisplayDuration);
-      if (mounted) {
-        context.go('/');
-      }
-      return;
-    }
-
-    /// 🟢 HANDLE SUCCESSFUL AUTH
-    if (widget.code != null) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-
-        /// ✅ THIS IS STUDENT USERNAME
-        final String? studentUsername =
-            prefs.getString(AppConstants.pendingGoogleUsernameKey);
-
-        final String? pendingTopic =
-            prefs.getString(AppConstants.pendingGoogleTopicKey);
-
-        if (pendingTopic != null && pendingTopic.isNotEmpty) {
-          await prefs.setString(
-            AppConstants.userTopicKey,
-            pendingTopic,
-          );
-        }
-
-        /// CLEANUP TEMP DATA
-        await prefs.remove(AppConstants.pendingGoogleUsernameKey);
-        await prefs.remove(AppConstants.pendingGoogleTopicKey);
-
-        /// 🔑 EXCHANGE CODE FOR TOKEN
-        /// studentUsername is passed to backend
-        await ref
-            .read(authProvider.notifier)
-            .exchangeCodeForToken(
-              widget.code!,
-              studentUsername,
-            );
-
-        // Navigation handled by auth state listener
-      } catch (e) {
-        setState(() {
-          _errorMessage = e.toString();
-        });
-
-        await Future.delayed(_errorDisplayDuration);
-        if (mounted) {
-          context.go('/');
-        }
-      }
-    } else {
-      /// No code, no error → back to login
-      context.go('/');
-    }
+      // TODO: exchange auth code with backend / Cognito
+      authNotifier.signIn('oauth-user@example.com', 'oauth-token');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    /// 🔄 LISTEN TO AUTH STATE
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      next.maybeWhen(
-        authenticated: () {
-          context.go('/dashboard');
-        },
-        error: (message) {
-          setState(() {
-            _errorMessage = message;
-          });
-        },
-        orElse: () {},
+    final state = context.watch<AuthNotifier>().state;
+
+    if (state.status == AuthStatus.loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
-    });
+    }
 
-    final authState = ref.watch(authProvider);
+    if (state.status == AuthStatus.authenticated) {
+      return const Scaffold(
+        body: Center(child: Text('Authentication successful')),
+      );
+    }
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.primaryGradient,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_errorMessage != null) ...[
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: ErrorBanner(message: _errorMessage!),
-                ),
-              ] else ...[
-                const CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  authState.maybeWhen(
-                    loading: () => 'Authenticating...',
-                    orElse: () => 'Processing...',
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ],
+    if (state.status == AuthStatus.error) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            state.errorMessage ?? 'Authentication failed',
+            style: const TextStyle(color: Colors.red),
           ),
         ),
-      ),
+      );
+    }
+
+    return const Scaffold(
+      body: Center(child: Text('Processing authentication...')),
     );
   }
 }
