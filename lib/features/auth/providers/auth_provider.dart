@@ -1,64 +1,59 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'auth_state.dart';
 
-import '../data/datasources/auth_remote_datasource.dart';
-import '../data/repositories/auth_repository.dart';
-import '../data/repositories/auth_repository_impl.dart';
-import '../presentation/providers/auth_state.dart';
+class AuthNotifier extends ChangeNotifier {
+  AuthState _state = AuthState.initial();
+  AuthState get state => _state;
 
-final authRemoteDataSourceProvider =
-    Provider<AuthRemoteDataSource>((ref) {
-  return AuthRemoteDataSource();
-});
+  void _setState(AuthState newState) {
+    _state = newState;
+    notifyListeners();
+  }
 
-final authRepositoryProvider =
-    Provider<AuthRepository>((ref) {
-  final remote = ref.read(authRemoteDataSourceProvider);
-  return AuthRepositoryImpl(remote);
-});
-
-final authProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final repo = ref.read(authRepositoryProvider);
-  return AuthNotifier(repo);
-});
-
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _repository;
-
-  AuthNotifier(this._repository)
-      : super(const AuthState.initial());
-
+  // -----------------------------
+  // SIGN IN
+  // -----------------------------
   Future<void> signIn(String email, String password) async {
+    _setState(AuthState.loading());
+
     try {
-      state = const AuthState.loading();
-      await _repository.signIn(
-        email: email,
-        password: password,
-      );
-      state = const AuthState.authenticated();
+      // TODO: Call repository / Cognito here
+      await Future.delayed(const Duration(seconds: 1));
+
+      _setState(AuthState.authenticated());
     } catch (e) {
-      state = AuthState.error(e.toString());
+      _setState(AuthState.error(e.toString()));
     }
   }
 
-  Future<void> exchangeCodeForToken(
-    String code,
-    String? username,
-  ) async {
+  // -----------------------------
+  // SIGN UP
+  // -----------------------------
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {
+    _setState(AuthState.loading());
+
     try {
-      state = const AuthState.loading();
-      await _repository.exchangeCodeForToken(
-        authorizationCode: code,
-        username: username,
-      );
-      state = const AuthState.authenticated();
+      // TODO: Call repository / Cognito signup
+      await Future.delayed(const Duration(seconds: 1));
+
+      _setState(AuthState.signupSuccess());
     } catch (e) {
-      state = AuthState.error(e.toString());
+      _setState(AuthState.error(e.toString()));
     }
   }
 
-  Future<void> logout() async {
-    await _repository.logout();
-    state = const AuthState.initial();
+  // -----------------------------
+  // GOOGLE OAUTH
+  // -----------------------------
+  String getGoogleOAuthUrl() {
+    // TODO: Replace with real OAuth URL
+    return 'https://accounts.google.com/o/oauth2/v2/auth';
+  }
+
+  void reset() {
+    _setState(AuthState.initial());
   }
 }
