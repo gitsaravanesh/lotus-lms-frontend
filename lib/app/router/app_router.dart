@@ -22,11 +22,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (code != null || error != null) {
             // This is an OAuth callback
             final errorDescription = state.uri.queryParameters['error_description'];
-            return AuthCallbackPage(
-              code: code,
-              error: error,
-              errorDescription: errorDescription,
-            );
+            return const AuthCallbackPage();
           }
           
           // Regular login page
