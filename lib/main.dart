@@ -18,10 +18,10 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthNotifier(),
         ),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Lotus LMS',
-        home: const LoginPage(),
+        home: LoginPage(),
       ),
     );
   }
