@@ -3,37 +3,45 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// AWS Cognito Configuration
 class CognitoConfig {
   // --------------------------------------------------
-  // USER POOL ID
-  // Flutter env > React env > fallback
+  // USER POOL ID (TESTABLE)
   // --------------------------------------------------
-  static String get userPoolId =>
-      dotenv.env['COGNITO_USER_POOL_ID'] ??
-      dotenv.env['REACT_APP_COGNITO_USER_POOL_ID'] ??
-      'ap-south-1_kaEBPbIxW';
+  static const String userPoolId = String.fromEnvironment(
+    'COGNITO_USER_POOL_ID',
+    defaultValue: String.fromEnvironment(
+      'REACT_APP_COGNITO_USER_POOL_ID',
+      defaultValue: 'ap-south-1_kaEBPbIxW',
+    ),
+  );
 
   // --------------------------------------------------
-  // DIRECT AUTH CLIENT ID (email/password)
+  // DIRECT AUTH CLIENT ID (TESTABLE)
   // --------------------------------------------------
-  static String get directAuthClientId =>
-      dotenv.env['DIRECT_AUTH_CLIENT_ID'] ??
-      dotenv.env['REACT_APP_DIRECT_AUTH_CLIENT_ID'] ??
-      '78cfqtlh63cj8q8eht4hka7om7';
+  static const String directAuthClientId = String.fromEnvironment(
+    'DIRECT_AUTH_CLIENT_ID',
+    defaultValue: String.fromEnvironment(
+      'REACT_APP_DIRECT_AUTH_CLIENT_ID',
+      defaultValue: '78cfqtlh63cj8q8eht4hka7om7',
+    ),
+  );
 
   // --------------------------------------------------
-  // OAUTH CLIENT ID (Hosted UI / Google)
+  // OAUTH CLIENT ID (TESTABLE)
   // --------------------------------------------------
-  static String get oauthClientId =>
-      dotenv.env['OAUTH_CLIENT_ID'] ??
-      dotenv.env['REACT_APP_OAUTH_CLIENT_ID'] ??
-      '1d46et2aoichnr8jbupvldi0c3';
+  static const String oauthClientId = String.fromEnvironment(
+    'OAUTH_CLIENT_ID',
+    defaultValue: String.fromEnvironment(
+      'REACT_APP_OAUTH_CLIENT_ID',
+      defaultValue: '1d46et2aoichnr8jbupvldi0c3',
+    ),
+  );
 
   // --------------------------------------------------
   // BACKWARD COMPATIBILITY (tests expect this)
   // --------------------------------------------------
-  static String get clientId => directAuthClientId;
+  static const String clientId = directAuthClientId;
 
   // --------------------------------------------------
-  // REGION
+  // REGION (RUNTIME)
   // --------------------------------------------------
   static String get region =>
       dotenv.env['AWS_REGION'] ??
@@ -41,7 +49,7 @@ class CognitoConfig {
       'ap-south-1';
 
   // --------------------------------------------------
-  // COGNITO DOMAIN (strip protocol)
+  // COGNITO DOMAIN (RUNTIME)
   // --------------------------------------------------
   static String get cognitoDomain {
     final domain =
@@ -53,7 +61,7 @@ class CognitoConfig {
   }
 
   // --------------------------------------------------
-  // REDIRECT URI
+  // REDIRECT URI (RUNTIME)
   // --------------------------------------------------
   static String get redirectUri =>
       dotenv.env['REDIRECT_URI'] ??
@@ -61,7 +69,7 @@ class CognitoConfig {
       'https://dodyqytcfhwoe.cloudfront.net/';
 
   // --------------------------------------------------
-  // SIGNOUT URI
+  // SIGNOUT URI (RUNTIME)
   // --------------------------------------------------
   static String get signoutUri =>
       dotenv.env['SIGNOUT_URL'] ??
@@ -69,7 +77,7 @@ class CognitoConfig {
       'https://dodyqytcfhwoe.cloudfront.net/';
 
   // --------------------------------------------------
-  // SCOPES (tests expect this exact list)
+  // SCOPES (TESTED)
   // --------------------------------------------------
   static const List<String> scopes = [
     'email',
@@ -78,7 +86,7 @@ class CognitoConfig {
   ];
 
   // --------------------------------------------------
-  // GOOGLE PROVIDER (tests expect this)
+  // GOOGLE PROVIDER (TESTED)
   // --------------------------------------------------
   static const String googleProvider = 'Google';
 }
