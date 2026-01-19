@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'app/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/presentation/pages/login_page.dart';
-
-void main() {
-  runApp(const MyApp());
-}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,14 +12,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthNotifier>(
-          create: (_) => AuthNotifier(),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthNotifier()),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Lotus LMS',
-        home: LoginPage(),
+
+        // 🔥 THIS IS WHAT RESTORES YOUR DESIGN
+        theme: AppTheme.lightTheme,
+
+        home: const LoginPage(),
       ),
     );
   }

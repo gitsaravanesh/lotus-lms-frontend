@@ -3,15 +3,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// AWS Cognito Configuration
 class CognitoConfig {
   // Read from environment variables with defaults from React .env
-  static String get userPoolId => 
-    dotenv.env['USER_POOL_ID'] ?? 
-    dotenv.env['REACT_APP_USER_POOL_ID'] ?? 
-    'ap-south-1_6C5lP9yfm';  // Updated to original user pool
-    
-  static String get clientId => 
-    dotenv.env['CLIENT_ID'] ?? 
-    dotenv.env['REACT_APP_CLIENT_ID'] ?? 
-    '5ppt7ntr3a3ckvc670v71h920r';  // Updated to original client ID
+  // Replace with your actual User Pool ID
+  static const String userPoolId = 'ap-south-1_kaEBPbIxW';
+
+  // App client for email/password signup & login
+  static const String directAuthClientId =
+      '78cfqtlh63cj8q8eht4hka7om7';
+
+  // App client for Hosted UI / Google OAuth
+  static const String oauthClientId =
+      '1d46et2aoichnr8jbupvldi0c3';
     
   static String get region => 
     dotenv.env['AWS_REGION'] ?? 
