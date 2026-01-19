@@ -13,7 +13,9 @@ class CognitoConfig {
   // App client for Hosted UI / Google OAuth
   static const String oauthClientId =
       '1d46et2aoichnr8jbupvldi0c3';
-    
+  
+  static const String clientId = directAuthClientId;
+
   static String get region => 
     dotenv.env['AWS_REGION'] ?? 
     dotenv.env['REACT_APP_REGION'] ?? 
