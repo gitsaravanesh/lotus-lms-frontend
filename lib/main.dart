@@ -10,7 +10,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load dotenv only if you are using it (safe for web)
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: '.env');
 
   runApp(const MyApp());
 }
