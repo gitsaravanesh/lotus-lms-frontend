@@ -1,6 +1,6 @@
-import 'dart:io';
+// This file is used to configure the Cognito Client IDs
 
-class CognitoConfig {
-  static const DIRECT_AUTH_CLIENT_ID = Platform.environment['DIRECT_AUTH_CLIENT_ID'] ?? '';
-  static const OAUTH_CLIENT_ID = Platform.environment['OAUTH_CLIENT_ID'] ?? '';
-}
+const String DIRECT_AUTH_CLIENT_ID = String.fromEnvironment('DIRECT_AUTH_CLIENT_ID');
+const String OAUTH_CLIENT_ID = String.fromEnvironment('OAUTH_CLIENT_ID');
+
+// Add more configuration and settings as needed.
