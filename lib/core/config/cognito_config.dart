@@ -13,11 +13,13 @@ class CognitoConfig {
     ),
   );
 
+  
+
   // --------------------------------------------------
   // DIRECT AUTH CLIENT ID (TESTABLE)
   // --------------------------------------------------
   static const String directAuthClientId = String.fromEnvironment(
-    'DIRECT_AUTH_CLIENT_ID',
+    'directAuthClientId',
     defaultValue: String.fromEnvironment(
       'REACT_APP_DIRECT_AUTH_CLIENT_ID',
       defaultValue: '78cfqtlh63cj8q8eht4hka7om7',
@@ -28,7 +30,7 @@ class CognitoConfig {
   // OAUTH CLIENT ID (TESTABLE)
   // --------------------------------------------------
   static const String oauthClientId = String.fromEnvironment(
-    'OAUTH_CLIENT_ID',
+    'oauthClientId',
     defaultValue: String.fromEnvironment(
       'REACT_APP_OAUTH_CLIENT_ID',
       defaultValue: '1d46et2aoichnr8jbupvldi0c3',
